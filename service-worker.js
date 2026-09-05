@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v5-arabe-vocalise';
+const CACHE_NAME = 'tasbih-plus-v8-asma-significations';
 const APP_SHELL = [
   './',
   './index.html',

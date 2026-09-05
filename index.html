@@ -461,7 +461,7 @@
     background:var(--gold-soft); color:var(--gold); font-weight:700;
   }
 
-  .quick-status{ width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
+  .quick-status{ width:100%; display:grid; grid-template-columns:repeat(4,1fr); gap:.55rem; }
   .quick-chip{
     min-width:0; display:flex; align-items:center; justify-content:center; gap:.4rem;
     background:rgba(255,255,255,.56); border:1px solid rgba(156,59,84,.14);
@@ -596,6 +596,131 @@
     .setting-card > input[type="range"], .setting-card > .language-select{ width:100%; min-width:0; }
   }
 
+
+  /* ---- Asma al-Husna ---- */
+  #asmaView{
+    flex-direction:column;
+    gap:1rem;
+    align-items:stretch;
+  }
+  #asmaView:not([hidden]){ display:flex; }
+  #asmaView .page-header{ padding:.25rem .15rem .1rem; }
+  .asma-toolbar{
+    position:sticky;
+    top:max(.4rem, env(safe-area-inset-top));
+    z-index:10;
+    padding:.65rem;
+    border-radius:18px;
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(14px);
+  }
+  .asma-search{
+    width:100%;
+    min-height:3rem;
+    border:1px solid rgba(156,59,84,.22);
+    border-radius:15px;
+    padding:.7rem .9rem;
+    background:var(--bg-panel);
+    color:var(--text);
+    font:500 16px 'Inter',sans-serif;
+    outline:none;
+  }
+  .asma-search:focus{
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px var(--gold-soft);
+  }
+  .asma-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:.75rem;
+  }
+  .asma-card{
+    position:relative;
+    min-width:0;
+    padding:1rem .8rem .85rem;
+    border-radius:18px;
+    background:var(--bg-panel);
+    border:1px solid rgba(156,59,84,.14);
+    box-shadow:0 8px 22px rgba(70,25,40,.05);
+    text-align:center;
+  }
+  .asma-number{
+    position:absolute;
+    top:.55rem;
+    left:.6rem;
+    min-width:1.7rem;
+    height:1.7rem;
+    padding:0 .35rem;
+    border-radius:999px;
+    display:grid;
+    place-items:center;
+    background:var(--gold-soft);
+    color:var(--gold);
+    font-size:.68rem;
+    font-weight:800;
+  }
+  .asma-ar{
+    margin:.35rem 0 .55rem;
+    color:var(--text);
+    font-family:'Amiri','Noto Naskh Arabic',serif;
+    font-size:1.55rem;
+    line-height:1.7;
+  }
+  .asma-translit{
+    margin:0;
+    color:var(--gold);
+    font-size:.78rem;
+    font-weight:700;
+    line-height:1.35;
+    overflow-wrap:anywhere;
+  }
+  .asma-empty{
+    grid-column:1/-1;
+    text-align:center;
+    color:var(--text-muted);
+    padding:2rem 1rem;
+  }
+  html[data-theme="dark"] .asma-card{
+    background:#272C31;
+    border-color:rgba(255,255,255,.10);
+  }
+  html[data-theme="dark"] .asma-search{
+    background:#202428;
+    color:#F5F1E8;
+    border-color:rgba(255,255,255,.16);
+  }
+  @media(max-width:390px){
+    .asma-grid{ grid-template-columns:1fr; }
+  }
+
+
+  .asma-meaning{
+    margin:.55rem 0 .35rem;
+    color:var(--text);
+    font-size:.78rem;
+    font-weight:650;
+    line-height:1.4;
+  }
+  .asma-dua{
+    margin:.55rem 0 0;
+    padding:.65rem .7rem;
+    border-radius:12px;
+    background:var(--gold-soft);
+    color:var(--text);
+    font-size:.75rem;
+    line-height:1.45;
+    text-align:left;
+  }
+  .asma-dua-label{
+    display:block;
+    margin-bottom:.2rem;
+    color:var(--gold);
+    font-size:.66rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+
 </style>
 
 <link rel="manifest" href="manifest.webmanifest">
@@ -728,6 +853,29 @@
     </div>
   </div>
 
+
+  <div id="asmaView" class="app-view" hidden>
+    <div class="page-header">
+      <h1 data-i18n="asmaTitle">Asma</h1>
+      <p data-i18n="asmaSubtitle">Les 99 beaux noms d’Allah — Al-Asma al-Husna.</p>
+    </div>
+
+    <div class="asma-toolbar">
+      <input
+        id="asmaSearch"
+        class="asma-search"
+        type="search"
+        autocomplete="off"
+        inputmode="search"
+        placeholder="Rechercher un nom…"
+        data-i18n-placeholder="asmaSearchPlaceholder"
+        aria-label="Rechercher parmi les 99 noms"
+        data-i18n-aria="asmaSearchAria">
+    </div>
+
+    <div class="asma-grid" id="asmaGrid" aria-live="polite"></div>
+  </div>
+
   <div id="settingsView" class="app-view" hidden>
     <div class="page-header">
       <h1 data-i18n="settingsTitle">Réglages</h1>
@@ -793,6 +941,7 @@
   <nav class="bottom-nav" aria-label="Navigation principale" data-i18n-aria="navAria">
     <button class="nav-btn" type="button" data-view="mainView" aria-current="page"><span class="nav-icon" aria-hidden="true">◉</span><span data-i18n="navTasbih">Tasbih</span></button>
     <button class="nav-btn" type="button" data-view="manageView"><span class="nav-icon" aria-hidden="true">✦</span><span data-i18n="navDhikrs">Mes dhikrs</span></button>
+    <button class="nav-btn" type="button" data-view="asmaView"><span class="nav-icon" aria-hidden="true">✧</span><span data-i18n="navAsma">Asma</span></button>
     <button class="nav-btn" type="button" data-view="settingsView"><span class="nav-icon" aria-hidden="true">⚙</span><span data-i18n="navSettings">Réglages</span></button>
   </nav>
 
@@ -812,6 +961,108 @@
     { key:'salla-allahou-ala-mouhammad', ar:'صَلَّى اللَّهُ عَلَى مُحَمَّدٍ', translit:"Sallâ llâhou 'alâ Mouhammad", fr:'Enregistré', patterns:['صلى الله على محمد','صلي الله على محمد'], duration:null },
     { key:'astaghfiroullahal-azima', ar:'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ', translit:"Astaghfiroullâhal-'Azîma alladhî lâ ilâha illâ houwal-Hayyul-Qayyoumu wa atoûbu ilayh", fr:'Enregistré', patterns:['استغفر الله العظيم الذي لا اله الا هو الحي القيوم واتوب اليه','أستغفر الله العظيم الذي لا إله إلا هو الحي القيوم وأتوب إليه'], duration:null },
     { key:'salat-ibrahimiyya', ar:'اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، وَبَارِكْ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ، كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ فِي الْعَالَمِينَ، إِنَّكَ حَمِيدٌ مَجِيدٌ', translit:"Allâhoumma salli 'alâ Sayyidinâ Mouhammadin wa 'alâ âli Sayyidinâ Mouhammadin, kamâ salayta 'alâ Ibrâhîma wa 'alâ âli Ibrâhîma, wa bârik 'alâ Sayyidinâ Mouhammadin wa 'alâ âli Sayyidinâ Mouhammadin, kamâ bârakta 'alâ Ibrâhîma wa 'alâ âli Ibrâhîma fil-'âlamîna innaka hamidun majîd", fr:'Enregistré', patterns:['اللهم صل على سيدنا محمد وعلى ال سيدنا محمد كما صليت على ابراهيم وعلى ال ابراهيم وبارك على سيدنا محمد وعلى ال سيدنا محمد كما باركت على ابراهيم وعلى ال ابراهيم في العالمين انك حميد مجيد','اللهم صلي على سيدنا محمد وعلى آل سيدنا محمد كما صليت على إبراهيم وعلى آل إبراهيم وبارك على سيدنا محمد وعلى آل سيدنا محمد كما باركت على إبراهيم وعلى آل إبراهيم في العالمين إنك حميد مجيد'], duration:null }
+  ];
+
+  const ASMA_NAMES = [
+    { ar:'الرَّحْمَنُ', translit:'Ar-Rahmân', meaning:'Le Tout Miséricordieux', dua:'Yā Rahmān, enveloppe-moi de Ta miséricorde.' },
+    { ar:'الرَّحِيمُ', translit:'Ar-Rahîm', meaning:'Le Très Miséricordieux', dua:'Yā Rahīm, accorde-moi Ta miséricorde et Ton pardon.' },
+    { ar:'الْمَلِكُ', translit:'Al-Malik', meaning:'Le Souverain', dua:'Yā Malik, guide-moi à bien employer ce que Tu m’as confié.' },
+    { ar:'الْقُدُّوسُ', translit:'Al-Quddûs', meaning:'Le Très Saint', dua:'Yā Quddūs, purifie mon cœur et mes intentions.' },
+    { ar:'السَّلَامُ', translit:'As-Salâm', meaning:'La Source de paix', dua:'Yā Salām, accorde-moi la paix du cœur et préserve-moi du mal.' },
+    { ar:'الْمُؤْمِنُ', translit:'Al-Mu’min', meaning:'Le Garant de la sécurité', dua:'Yā Mu’min, accorde-moi sécurité et sérénité.' },
+    { ar:'الْمُهَيْمِنُ', translit:'Al-Muhaymin', meaning:'Le Protecteur et Surveillant', dua:'Yā Muhaymin, protège-moi et veille sur moi.' },
+    { ar:'الْعَزِيزُ', translit:'Al-‘Azîz', meaning:'Le Tout-Puissant', dua:'Yā ‘Azīz, accorde-moi force et dignité dans l’obéissance.' },
+    { ar:'الْجَبَّارُ', translit:'Al-Jabbâr', meaning:'Le Contraignant, Celui qui répare', dua:'Yā Jabbār, répare ce qui est brisé dans ma vie.' },
+    { ar:'الْمُتَكَبِّرُ', translit:'Al-Mutakabbir', meaning:'Le Suprême', dua:'Yā Mutakabbir, éloigne de mon cœur l’orgueil.' },
+    { ar:'الْخَالِقُ', translit:'Al-Khâliq', meaning:'Le Créateur', dua:'Yā Khāliq, améliore mon caractère et guide mes choix.' },
+    { ar:'الْبَارِئُ', translit:'Al-Bâri’', meaning:'Celui qui donne l’existence', dua:'Yā Bāri’, accorde-moi santé et équilibre.' },
+    { ar:'الْمُصَوِّرُ', translit:'Al-Musawwir', meaning:'Celui qui façonne', dua:'Yā Musawwir, embellis mon caractère par les bonnes qualités.' },
+    { ar:'الْغَفَّارُ', translit:'Al-Ghaffâr', meaning:'Le Grand Pardonneur', dua:'Yā Ghaffār, pardonne mes fautes répétées.' },
+    { ar:'الْقَهَّارُ', translit:'Al-Qahhâr', meaning:'Le Dominateur suprême', dua:'Yā Qahhār, aide-moi à vaincre mes mauvaises passions.' },
+    { ar:'الْوَهَّابُ', translit:'Al-Wahhâb', meaning:'Le Grand Donateur', dua:'Yā Wahhāb, accorde-moi de Tes dons par pure grâce.' },
+    { ar:'الرَّزَّاقُ', translit:'Ar-Razzâq', meaning:'Le Pourvoyeur', dua:'Yā Razzāq, accorde-moi une subsistance bonne et licite.' },
+    { ar:'الْفَتَّاحُ', translit:'Al-Fattâh', meaning:'Celui qui ouvre', dua:'Yā Fattāh, ouvre-moi les portes du bien.' },
+    { ar:'الْعَلِيمُ', translit:'Al-‘Alîm', meaning:'L’Omniscient', dua:'Yā ‘Alīm, accorde-moi une science utile.' },
+    { ar:'الْقَابِضُ', translit:'Al-Qâbid', meaning:'Celui qui retient', dua:'Yā Qābid, éloigne de moi ce qui me nuit.' },
+    { ar:'الْبَاسِطُ', translit:'Al-Bâsit', meaning:'Celui qui étend', dua:'Yā Bāsit, élargis pour moi Ta grâce et ma subsistance.' },
+    { ar:'الْخَافِضُ', translit:'Al-Khâfid', meaning:'Celui qui abaisse', dua:'Yā Khāfid, protège-moi de l’orgueil et de l’arrogance.' },
+    { ar:'الرَّافِعُ', translit:'Ar-Râfi’', meaning:'Celui qui élève', dua:'Yā Rāfi‘, élève-moi par la foi et les bonnes œuvres.' },
+    { ar:'الْمُعِزُّ', translit:'Al-Mu‘izz', meaning:'Celui qui donne la puissance', dua:'Yā Mu‘izz, accorde-moi une dignité qui vient de Toi.' },
+    { ar:'الْمُذِلُّ', translit:'Al-Mudhill', meaning:'Celui qui humilie', dua:'Yā Mudhill, préserve-moi des causes de l’humiliation.' },
+    { ar:'السَّمِيعُ', translit:'As-Samî‘', meaning:'Celui qui entend tout', dua:'Yā Samī‘, entends ma prière et mon invocation.' },
+    { ar:'الْبَصِيرُ', translit:'Al-Basîr', meaning:'Celui qui voit tout', dua:'Yā Basīr, vois ma situation et guide-moi vers le bien.' },
+    { ar:'الْحَكَمُ', translit:'Al-Hakam', meaning:'Le Juge', dua:'Yā Hakam, juge entre mes affaires avec vérité.' },
+    { ar:'الْعَدْلُ', translit:'Al-‘Adl', meaning:'Le Parfaitement Juste', dua:'Yā ‘Adl, aide-moi à être juste envers les autres.' },
+    { ar:'اللَّطِيفُ', translit:'Al-Latîf', meaning:'Le Subtil et Bienveillant', dua:'Yā Latīf, sois doux envers moi dans ce que je traverse.' },
+    { ar:'الْخَبِيرُ', translit:'Al-Khabîr', meaning:'Le Parfaitement Informé', dua:'Yā Khabīr, guide-moi puisque Tu connais parfaitement ma situation.' },
+    { ar:'الْحَلِيمُ', translit:'Al-Halîm', meaning:'Le Très Clément', dua:'Yā Halīm, accorde-moi patience et maîtrise de moi.' },
+    { ar:'الْعَظِيمُ', translit:'Al-‘Azîm', meaning:'L’Immense', dua:'Yā ‘Azīm, remplis mon cœur de respect pour Ta grandeur.' },
+    { ar:'الْغَفُورُ', translit:'Al-Ghafûr', meaning:'Le Très Pardonneur', dua:'Yā Ghafūr, pardonne-moi et couvre mes fautes.' },
+    { ar:'الشَّكُورُ', translit:'Ash-Shakûr', meaning:'Celui qui reconnaît et récompense', dua:'Yā Shakūr, accepte mes petites œuvres et multiplie leur récompense.' },
+    { ar:'الْعَلِيُّ', translit:'Al-‘Aliyy', meaning:'Le Très-Haut', dua:'Yā ‘Aliyy, élève mes aspirations vers ce qui Te plaît.' },
+    { ar:'الْكَبِيرُ', translit:'Al-Kabîr', meaning:'Le Très-Grand', dua:'Yā Kabīr, rappelle à mon cœur que toute grandeur T’appartient.' },
+    { ar:'الْحَفِيظُ', translit:'Al-Hafîz', meaning:'Le Préservateur', dua:'Yā Hafīz, protège-moi, ma famille et ma foi.' },
+    { ar:'الْمُقِيتُ', translit:'Al-Muqît', meaning:'Celui qui nourrit et soutient', dua:'Yā Muqīt, nourris mon corps et mon cœur de ce qui est bon.' },
+    { ar:'الْحَسِيبُ', translit:'Al-Hasîb', meaning:'Celui qui suffit pour demander des comptes', dua:'Yā Hasīb, suffis-moi dans mes besoins et facilite mes comptes.' },
+    { ar:'الْجَلِيلُ', translit:'Al-Jalîl', meaning:'Le Majestueux', dua:'Yā Jalīl, accorde-moi de Te révérer comme il convient.' },
+    { ar:'الْكَرِيمُ', translit:'Al-Karîm', meaning:'Le Généreux', dua:'Yā Karīm, comble-moi de Ta générosité.' },
+    { ar:'الرَّقِيبُ', translit:'Ar-Raqîb', meaning:'Le Vigilant', dua:'Yā Raqīb, aide-moi à vivre en sachant que Tu me vois.' },
+    { ar:'الْمُجِيبُ', translit:'Al-Mujîb', meaning:'Celui qui répond', dua:'Yā Mujīb, réponds à mon invocation si elle est un bien pour moi.' },
+    { ar:'الْوَاسِعُ', translit:'Al-Wâsi‘', meaning:'L’Immense, Celui dont la grâce est vaste', dua:'Yā Wāsi‘, accorde-moi de l’ampleur dans Ta miséricorde.' },
+    { ar:'الْحَكِيمُ', translit:'Al-Hakîm', meaning:'Le Sage', dua:'Yā Hakīm, accorde-moi sagesse et bon jugement.' },
+    { ar:'الْوَدُودُ', translit:'Al-Wadûd', meaning:'Le Tout-Aimant', dua:'Yā Wadūd, mets l’amour sincère et la bonté dans mon cœur.' },
+    { ar:'الْمَجِيدُ', translit:'Al-Majîd', meaning:'Le Glorieux', dua:'Yā Majīd, accorde-moi de T’honorer par mes actes.' },
+    { ar:'الْبَاعِثُ', translit:'Al-Bâ‘ith', meaning:'Celui qui ressuscite', dua:'Yā Bā‘ith, ranime mon cœur dans l’obéissance.' },
+    { ar:'الشَّهِيدُ', translit:'Ash-Shahîd', meaning:'Le Témoin', dua:'Yā Shahīd, sois témoin de ma sincérité et rectifie-la.' },
+    { ar:'الْحَقُّ', translit:'Al-Haqq', meaning:'La Vérité', dua:'Yā Haqq, montre-moi la vérité et aide-moi à la suivre.' },
+    { ar:'الْوَكِيلُ', translit:'Al-Wakîl', meaning:'Le Garant', dua:'Yā Wakīl, je Te confie mes affaires : facilite ce qui est bon.' },
+    { ar:'الْقَوِيُّ', translit:'Al-Qawiyy', meaning:'Le Fort', dua:'Yā Qawiyy, donne-moi la force d’accomplir le bien.' },
+    { ar:'الْمَتِينُ', translit:'Al-Matîn', meaning:'L’Inébranlable', dua:'Yā Matīn, affermis-moi dans la foi et la patience.' },
+    { ar:'الْوَلِيُّ', translit:'Al-Waliyy', meaning:'Le Protecteur proche', dua:'Yā Waliyy, sois mon Protecteur et guide-moi.' },
+    { ar:'الْحَمِيدُ', translit:'Al-Hamîd', meaning:'Le Digne de louange', dua:'Yā Hamīd, aide-moi à Te louer dans l’aisance comme dans l’épreuve.' },
+    { ar:'الْمُحْصِي', translit:'Al-Muhsî', meaning:'Celui qui dénombre toute chose', dua:'Yā Muhsī, aide-moi à employer mes jours dans ce qui est utile.' },
+    { ar:'الْمُبْدِئُ', translit:'Al-Mubdi’', meaning:'Celui qui commence la création', dua:'Yā Mubdi’, ouvre pour moi un nouveau commencement dans le bien.' },
+    { ar:'الْمُعِيدُ', translit:'Al-Mu‘îd', meaning:'Celui qui ramène à l’existence', dua:'Yā Mu‘īd, ramène mon cœur vers Toi lorsque je m’éloigne.' },
+    { ar:'الْمُحْيِي', translit:'Al-Muhyî', meaning:'Celui qui donne la vie', dua:'Yā Muhyī, vivifie mon cœur par la foi.' },
+    { ar:'الْمُمِيتُ', translit:'Al-Mumît', meaning:'Celui qui donne la mort', dua:'Yā Mumīt, accorde-moi une bonne fin.' },
+    { ar:'الْحَيُّ', translit:'Al-Hayy', meaning:'Le Vivant', dua:'Yā Hayy, accorde à mon cœur une vie de foi.' },
+    { ar:'الْقَيُّومُ', translit:'Al-Qayyûm', meaning:'Celui qui subsiste par Lui-même et soutient toute chose', dua:'Yā Qayyūm, soutiens-moi et ne me laisse pas à moi-même.' },
+    { ar:'الْوَاجِدُ', translit:'Al-Wâjid', meaning:'Celui qui trouve et ne manque de rien', dua:'Yā Wājid, accorde-moi de trouver le bien que je cherche auprès de Toi.' },
+    { ar:'الْمَاجِدُ', translit:'Al-Mâjid', meaning:'Le Très Noble', dua:'Yā Mājid, ennoblis mon caractère et mes œuvres.' },
+    { ar:'الْوَاحِدُ', translit:'Al-Wâhid', meaning:'L’Unique', dua:'Yā Wāhid, unifie mon cœur dans l’adoration de Toi seul.' },
+    { ar:'الْأَحَدُ', translit:'Al-Ahad', meaning:'L’Un', dua:'Yā Ahad, raffermis mon attachement à Ton unicité.' },
+    { ar:'الصَّمَدُ', translit:'As-Samad', meaning:'L’Absolu, Celui dont tous dépendent', dua:'Yā Samad, je me tourne vers Toi dans tous mes besoins.' },
+    { ar:'الْقَادِرُ', translit:'Al-Qâdir', meaning:'Le Tout-Puissant capable de toute chose', dua:'Yā Qādir, accorde-moi ce bien si Tu le veux.' },
+    { ar:'الْمُقْتَدِرُ', translit:'Al-Muqtadir', meaning:'Le Parfaitement Puissant', dua:'Yā Muqtadir, facilite ce qui me paraît impossible si cela est un bien.' },
+    { ar:'الْمُقَدِّمُ', translit:'Al-Muqaddim', meaning:'Celui qui fait avancer', dua:'Yā Muqaddim, fais avancer dans ma vie ce qui est meilleur pour moi.' },
+    { ar:'الْمُؤَخِّرُ', translit:'Al-Mu’akhkhir', meaning:'Celui qui fait reculer', dua:'Yā Mu’akhkhir, éloigne ou retarde ce qui me serait nuisible.' },
+    { ar:'الْأَوَّلُ', translit:'Al-Awwal', meaning:'Le Premier', dua:'Yā Awwal, bénis le commencement de mes projets.' },
+    { ar:'الْآخِرُ', translit:'Al-Âkhir', meaning:'Le Dernier', dua:'Yā Ākhir, accorde-moi une bonne fin dans mes affaires.' },
+    { ar:'الظَّاهِرُ', translit:'Az-Zâhir', meaning:'Le Manifeste', dua:'Yā Zāhir, rends-moi clairs les signes du bien et de la vérité.' },
+    { ar:'الْبَاطِنُ', translit:'Al-Bâtin', meaning:'Le Caché', dua:'Yā Bātin, purifie ce qui est caché dans mon cœur.' },
+    { ar:'الْوَالِي', translit:'Al-Wâlî', meaning:'Le Gouverneur', dua:'Yā Wālī, dirige mes affaires vers ce qui est juste.' },
+    { ar:'الْمُتَعَالِي', translit:'Al-Muta‘âlî', meaning:'Le Très-Élevé', dua:'Yā Muta‘ālī, élève mon cœur au-dessus des choses qui m’éloignent de Toi.' },
+    { ar:'الْبَرُّ', translit:'Al-Barr', meaning:'La Source de toute bonté', dua:'Yā Barr, accorde-moi Ta bonté et aide-moi à faire le bien.' },
+    { ar:'التَّوَّابُ', translit:'At-Tawwâb', meaning:'Celui qui accueille le repentir', dua:'Yā Tawwāb, accepte mon repentir et aide-moi à revenir vers Toi.' },
+    { ar:'الْمُنْتَقِمُ', translit:'Al-Muntaqim', meaning:'Celui qui rétribue avec justice', dua:'Yā Muntaqim, protège-moi de l’injustice et accorde une justice équitable.' },
+    { ar:'الْعَفُوُّ', translit:'Al-‘Afuww', meaning:'Celui qui efface les fautes', dua:'Yā ‘Afuww, efface mes fautes et pardonne-moi.' },
+    { ar:'الرَّؤُوفُ', translit:'Ar-Ra’ûf', meaning:'Le Très Compatissant', dua:'Yā Ra’ūf, traite-moi avec compassion et douceur.' },
+    { ar:'مَالِكُ الْمُلْكِ', translit:'Mâlik-ul-Mulk', meaning:'Le Maître de la royauté', dua:'Yā Mālik al-Mulk, accorde-moi le bien de ce monde sans qu’il possède mon cœur.' },
+    { ar:'ذُو الْجَلَالِ وَالْإِكْرَامِ', translit:'Dhul-Jalâli wal-Ikrâm', meaning:'Le Détenteur de la majesté et de la générosité', dua:'Yā Dhul-Jalāli wal-Ikrām, honore-moi par Ton pardon et Ta générosité.' },
+    { ar:'الْمُقْسِطُ', translit:'Al-Muqsit', meaning:'L’Équitable', dua:'Yā Muqsit, aide-moi à agir avec équité.' },
+    { ar:'الْجَامِعُ', translit:'Al-Jâmi‘', meaning:'Celui qui rassemble', dua:'Yā Jāmi‘, rassemble ma famille et mon cœur autour du bien.' },
+    { ar:'الْغَنِيُّ', translit:'Al-Ghaniyy', meaning:'Celui qui se suffit à Lui-même', dua:'Yā Ghaniyy, enrichis mon cœur par le contentement.' },
+    { ar:'الْمُغْنِي', translit:'Al-Mughnî', meaning:'Celui qui enrichit', dua:'Yā Mughnī, accorde-moi une suffisance licite et bénie.' },
+    { ar:'الْمَانِعُ', translit:'Al-Mâni‘', meaning:'Celui qui empêche', dua:'Yā Māni‘, préserve-moi de ce qui me ferait du mal.' },
+    { ar:'الضَّارُّ', translit:'Ad-Dârr', meaning:'Celui qui peut laisser atteindre l’épreuve', dua:'Yā Dārr, protège-moi des épreuves qui me détourneraient de Toi.' },
+    { ar:'النَّافِعُ', translit:'An-Nâfi‘', meaning:'Celui qui accorde le bénéfice', dua:'Yā Nāfi‘, accorde-moi ce qui m’est réellement bénéfique.' },
+    { ar:'النُّورُ', translit:'An-Nûr', meaning:'La Lumière', dua:'Yā Nūr, illumine mon cœur et mon chemin.' },
+    { ar:'الْهَادِي', translit:'Al-Hâdî', meaning:'Le Guide', dua:'Yā Hādī, guide-moi vers le droit chemin.' },
+    { ar:'الْبَدِيعُ', translit:'Al-Badî‘', meaning:'L’Incomparable Créateur', dua:'Yā Badī‘, ouvre-moi des solutions auxquelles je ne pensais pas.' },
+    { ar:'الْبَاقِي', translit:'Al-Bâqî', meaning:'L’Éternel, Celui qui demeure', dua:'Yā Bāqī, attache mon cœur à ce qui demeure auprès de Toi.' },
+    { ar:'الْوَارِثُ', translit:'Al-Wârith', meaning:'L’Héritier', dua:'Yā Wārith, aide-moi à laisser derrière moi des œuvres utiles.' },
+    { ar:'الرَّشِيدُ', translit:'Ar-Rashîd', meaning:'Le Guide vers la droiture', dua:'Yā Rashīd, guide mes décisions vers ce qui est droit.' },
+    { ar:'الصَّبُورُ', translit:'As-Sabûr', meaning:'Le Très Patient', dua:'Yā Sabūr, accorde-moi patience et constance.' }
   ];
 
   function normalize(s){
@@ -954,6 +1205,9 @@
     manageList: document.getElementById('manageList'),
     manageStatus: document.getElementById('manageStatus'),
     settingsView: document.getElementById('settingsView'),
+    asmaView: document.getElementById('asmaView'),
+    asmaGrid: document.getElementById('asmaGrid'),
+    asmaSearch: document.getElementById('asmaSearch'),
     languageSetting: document.getElementById('languageSetting'),
     vibrationSetting: document.getElementById('vibrationSetting'),
     arabicSizeSetting: document.getElementById('arabicSizeSetting'),
@@ -969,36 +1223,36 @@
   const I18N = {
     fr:{
       brandSubtitle:'Votre compteur vocal de dhikr.', counterAria:'Compteur de dhikr', navAria:'Navigation principale',
-      navTasbih:'Tasbih', navDhikrs:'Mes dhikrs', navSettings:'Réglages', micPaused:'Micro en pause', micOn:'Micro actif — je vous écoute', micOff:'Micro coupé', micActive:'Micro actif', micEnable:'Activer le micro', micDisable:'Couper le micro',
+      navTasbih:'Tasbih', navDhikrs:'Mes dhikrs', navAsma:'Asma', navSettings:'Réglages', micPaused:'Micro en pause', micOn:'Micro actif — je vous écoute', micOff:'Micro coupé', micActive:'Micro actif', micEnable:'Activer le micro', micDisable:'Couper le micro',
       reset:'Réinitialiser', pause:'Mettre en pause', resume:'Reprendre', countingActive:'Comptage actif', countingPaused:'Comptage en pause', micPausedCounting:'Micro actif — en pause, ne compte pas',
       chooseDhikr:'Choisir le dhikr', target:'Objectif', timerTitle:'Minuteur du dhikr', measureOne:'Mesurer une répétition', stopMeasure:'Arrêter la mesure', durationUnset:'Durée non réglée', durationLabel:'Durée : ', perRepeat:' / répétition', timerStart:'Démarrer le minuteur', timerStop:'Arrêter le minuteur', free:'Libre',
       myDhikrsTitle:'Mes dhikrs', myDhikrsSubtitle:'Ajoutez, modifiez ou supprimez vos dhikrs personnalisés.', addDhikrTitle:'Ajouter un dhikr', editDhikrTitle:'Modifier le dhikr', addThisDhikr:'Ajouter ce dhikr', saveChanges:'Enregistrer les modifications', cancelEdit:'Annuler la modification', availableDhikrs:'Dhikrs disponibles', edit:'Modifier', delete:'Supprimer',
       translitPlaceholder:'Translittération (ex. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Traduction (optionnel)',
-      settingsTitle:'Réglages', settingsSubtitle:'Personnalisez l’application selon vos préférences.', themeTitle:'Thème de l’application', themeHint:'Choisissez une ambiance visuelle. Le thème est mémorisé automatiquement.', themeDark:'Sombre', themeBlue:'Bleu', themeGreen:'Vert', themePurple:'Violet', themePink:'Rose', languageTitle:'Langue de l’interface', languageIntro:'Choisissez la langue des boutons, menus et messages de l’application.', languageLabel:'Langue', languageHint:'Le changement est appliqué immédiatement.', speechLanguageNote:'Dhikrs : reconnaissance en arabe. Commandes vocales : dites « Pause », « Reprends » ou « Remets à zéro ». Si Chrome les transcrit mal, les commandes arabes « توقف », « استمر » et « صفر » sont aussi reconnues.', comfortTitle:'Confort et affichage', vibrationLabel:'Vibration au comptage', vibrationHint:'Retour haptique léger sur mobile compatible.', arabicSizeLabel:'Taille du texte arabe', arabicSizeHint:'Ajuste uniquement le dhikr principal.', confirmResetLabel:'Confirmer les remises à zéro', confirmResetHint:'Évite les réinitialisations accidentelles.', dataTitle:'Données', dataText:'Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.',
+      asmaTitle:'Asma', asmaSubtitle:'Les 99 beaux noms d’Allah — Al-Asma al-Husna.', asmaSearchPlaceholder:'Rechercher un nom…', asmaSearchAria:'Rechercher parmi les 99 noms', asmaNoResults:'Aucun nom trouvé.', asmaDuaLabel:'Exemple d’invocation', settingsTitle:'Réglages', settingsSubtitle:'Personnalisez l’application selon vos préférences.', themeTitle:'Thème de l’application', themeHint:'Choisissez une ambiance visuelle. Le thème est mémorisé automatiquement.', themeDark:'Sombre', themeBlue:'Bleu', themeGreen:'Vert', themePurple:'Violet', themePink:'Rose', languageTitle:'Langue de l’interface', languageIntro:'Choisissez la langue des boutons, menus et messages de l’application.', languageLabel:'Langue', languageHint:'Le changement est appliqué immédiatement.', speechLanguageNote:'Dhikrs : reconnaissance en arabe. Commandes vocales : dites « Pause », « Reprends » ou « Remets à zéro ». Si Chrome les transcrit mal, les commandes arabes « توقف », « استمر » et « صفر » sont aussi reconnues.', comfortTitle:'Confort et affichage', vibrationLabel:'Vibration au comptage', vibrationHint:'Retour haptique léger sur mobile compatible.', arabicSizeLabel:'Taille du texte arabe', arabicSizeHint:'Ajuste uniquement le dhikr principal.', confirmResetLabel:'Confirmer les remises à zéro', confirmResetHint:'Évite les réinitialisations accidentelles.', dataTitle:'Données', dataText:'Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.',
       confirmReset:'Remettre le compteur à zéro ?', resetDone:'Compteur de ce dhikr remis à zéro', targetReached:'objectif atteint', heard:'Entendu', notRecognized:'Non reconnu', phraseNotRecognized:'Phrase non reconnue', sayDhikrMeasure:'Dites le dhikr, je mesure le temps', durationSet:'Durée réglée à ', timerStarted:'Minuteur démarré', timerStopped:'Minuteur arrêté',
       deleteConfirm:n=>'Supprimer « '+n+' » ?', deleted:n=>'« '+n+' » supprimé.', duplicate:'Un dhikr avec cette translittération existe déjà.', modified:n=>'« '+n+' » modifié.', added:n=>'« '+n+' » ajouté à la liste des dhikrs.', invalidTranslit:'Merci d’indiquer une translittération valide.', switched:(n,c)=>'Dhikr changé pour '+n+', compteur '+c,
       micDenied:'Accès au micro refusé par le navigateur', micDeniedShort:'Accès au micro refusé', micPermission:'Autorisez le microphone pour activer la reconnaissance vocale', micPermissionError:'Impossible d’obtenir l’autorisation du microphone', noMic:'Aucun micro détecté', networkRetry:'Micro actif — problème réseau, nouvelle tentative', micStartError:'Impossible de démarrer le micro', unknownError:'erreur inconnue', safariSpeechUnavailable:'Safari autorise le microphone, mais la reconnaissance vocale Web n’est pas disponible dans ce mode. Essayez d’ouvrir Tasbih+ directement dans Safari.', speechUnsupported:"La reconnaissance vocale n'est pas prise en charge par ce navigateur. Le cercle et les boutons restent utilisables au toucher. Essayez Chrome, Edge ou une version récente de Safari."
     },
     it:{
       brandSubtitle:'Il tuo contatore vocale di dhikr.', counterAria:'Contatore di dhikr', navAria:'Navigazione principale',
-      navTasbih:'Tasbih', navDhikrs:'I miei dhikr', navSettings:'Impostazioni', micPaused:'Microfono in pausa', micOn:'Microfono attivo — ti ascolto', micOff:'Microfono spento', micActive:'Microfono attivo', micEnable:'Attiva microfono', micDisable:'Disattiva microfono',
+      navTasbih:'Tasbih', navDhikrs:'I miei dhikr', navAsma:'Asma', navSettings:'Impostazioni', micPaused:'Microfono in pausa', micOn:'Microfono attivo — ti ascolto', micOff:'Microfono spento', micActive:'Microfono attivo', micEnable:'Attiva microfono', micDisable:'Disattiva microfono',
       reset:'Azzera', pause:'Metti in pausa', resume:'Riprendi', countingActive:'Conteggio attivo', countingPaused:'Conteggio in pausa', micPausedCounting:'Microfono attivo — in pausa, non conta',
       chooseDhikr:'Scegli il dhikr', target:'Obiettivo', timerTitle:'Timer del dhikr', measureOne:'Misura una ripetizione', stopMeasure:'Ferma misurazione', durationUnset:'Durata non impostata', durationLabel:'Durata: ', perRepeat:' / ripetizione', timerStart:'Avvia timer', timerStop:'Ferma timer', free:'Libero',
       myDhikrsTitle:'I miei dhikr', myDhikrsSubtitle:'Aggiungi, modifica o elimina i tuoi dhikr personalizzati.', addDhikrTitle:'Aggiungi un dhikr', editDhikrTitle:'Modifica il dhikr', addThisDhikr:'Aggiungi questo dhikr', saveChanges:'Salva modifiche', cancelEdit:'Annulla modifica', availableDhikrs:'Dhikr disponibili', edit:'Modifica', delete:'Elimina',
       translitPlaceholder:'Traslitterazione (es. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Traduzione (opzionale)',
-      settingsTitle:'Impostazioni', themeTitle:'Tema dell’app', themeHint:'Scegli l’aspetto dell’app. Il tema viene salvato automaticamente.', themeDark:'Scuro', themeBlue:'Blu', themeGreen:'Verde', themePurple:'Viola', themePink:'Rosa', settingsSubtitle:'Personalizza l’app secondo le tue preferenze.', languageTitle:'Lingua dell’interfaccia', languageIntro:'Scegli la lingua di pulsanti, menu e messaggi dell’app.', languageLabel:'Lingua', languageHint:'La modifica viene applicata immediatamente.', speechLanguageNote:'Dhikr: riconoscimento in arabo. Comandi vocali: dì « Pausa », « Riprendi » o « Azzera ». Se Chrome li trascrive male, funzionano anche « توقف », « استمر » e « صفر ».', comfortTitle:'Comfort e visualizzazione', vibrationLabel:'Vibrazione al conteggio', vibrationHint:'Leggero feedback aptico sui dispositivi compatibili.', arabicSizeLabel:'Dimensione del testo arabo', arabicSizeHint:'Regola solo il dhikr principale.', confirmResetLabel:'Conferma azzeramento', confirmResetHint:'Evita azzeramenti accidentali.', dataTitle:'Dati', dataText:'Dhikr personalizzati, contatori e impostazioni vengono salvati localmente nel browser.',
+      asmaTitle:'Asma', asmaSubtitle:'I 99 bei nomi di Allah — Al-Asma al-Husna.', asmaSearchPlaceholder:'Cerca un nome…', asmaSearchAria:'Cerca tra i 99 nomi', asmaNoResults:'Nessun nome trovato.', asmaDuaLabel:'Esempio di invocazione', settingsTitle:'Impostazioni', themeTitle:'Tema dell’app', themeHint:'Scegli l’aspetto dell’app. Il tema viene salvato automaticamente.', themeDark:'Scuro', themeBlue:'Blu', themeGreen:'Verde', themePurple:'Viola', themePink:'Rosa', settingsSubtitle:'Personalizza l’app secondo le tue preferenze.', languageTitle:'Lingua dell’interfaccia', languageIntro:'Scegli la lingua di pulsanti, menu e messaggi dell’app.', languageLabel:'Lingua', languageHint:'La modifica viene applicata immediatamente.', speechLanguageNote:'Dhikr: riconoscimento in arabo. Comandi vocali: dì « Pausa », « Riprendi » o « Azzera ». Se Chrome li trascrive male, funzionano anche « توقف », « استمر » e « صفر ».', comfortTitle:'Comfort e visualizzazione', vibrationLabel:'Vibrazione al conteggio', vibrationHint:'Leggero feedback aptico sui dispositivi compatibili.', arabicSizeLabel:'Dimensione del testo arabo', arabicSizeHint:'Regola solo il dhikr principale.', confirmResetLabel:'Conferma azzeramento', confirmResetHint:'Evita azzeramenti accidentali.', dataTitle:'Dati', dataText:'Dhikr personalizzati, contatori e impostazioni vengono salvati localmente nel browser.',
       confirmReset:'Azzerare il contatore?', resetDone:'Contatore di questo dhikr azzerato', targetReached:'obiettivo raggiunto', heard:'Riconosciuto', notRecognized:'Non riconosciuto', phraseNotRecognized:'Frase non riconosciuta', sayDhikrMeasure:'Recita il dhikr, misuro il tempo', durationSet:'Durata impostata a ', timerStarted:'Timer avviato', timerStopped:'Timer fermato',
       deleteConfirm:n=>'Eliminare « '+n+' »?', deleted:n=>'« '+n+' » eliminato.', duplicate:'Esiste già un dhikr con questa traslitterazione.', modified:n=>'« '+n+' » modificato.', added:n=>'« '+n+' » aggiunto alla lista dei dhikr.', invalidTranslit:'Inserisci una traslitterazione valida.', switched:(n,c)=>'Dhikr cambiato in '+n+', contatore '+c,
       micDenied:'Accesso al microfono negato dal browser', micDeniedShort:'Accesso al microfono negato', micPermission:'Autorizza il microfono per attivare il riconoscimento vocale', micPermissionError:'Impossibile ottenere il permesso del microfono', noMic:'Nessun microfono rilevato', networkRetry:'Microfono attivo — problema di rete, nuovo tentativo', micStartError:'Impossibile avviare il microfono', unknownError:'errore sconosciuto', safariSpeechUnavailable:'Safari autorizza il microfono, ma il riconoscimento vocale Web non è disponibile in questa modalità. Prova ad aprire Tasbih+ direttamente in Safari.', speechUnsupported:'Il riconoscimento vocale non è supportato da questo browser. Il contatore e i pulsanti restano utilizzabili al tocco. Prova Chrome, Edge o una versione recente di Safari.'
     },
     en:{
       brandSubtitle:'Your voice dhikr counter.', counterAria:'Dhikr counter', navAria:'Main navigation',
-      navTasbih:'Tasbih', navDhikrs:'My dhikrs', navSettings:'Settings', micPaused:'Microphone paused', micOn:'Microphone active — listening', micOff:'Microphone off', micActive:'Microphone active', micEnable:'Enable microphone', micDisable:'Turn off microphone',
+      navTasbih:'Tasbih', navDhikrs:'My dhikrs', navAsma:'Asma', navSettings:'Settings', micPaused:'Microphone paused', micOn:'Microphone active — listening', micOff:'Microphone off', micActive:'Microphone active', micEnable:'Enable microphone', micDisable:'Turn off microphone',
       reset:'Reset', pause:'Pause', resume:'Resume', countingActive:'Counting active', countingPaused:'Counting paused', micPausedCounting:'Microphone active — paused, not counting',
       chooseDhikr:'Choose dhikr', target:'Target', timerTitle:'Dhikr timer', measureOne:'Measure one repetition', stopMeasure:'Stop measurement', durationUnset:'Duration not set', durationLabel:'Duration: ', perRepeat:' / repetition', timerStart:'Start timer', timerStop:'Stop timer', free:'Free',
       myDhikrsTitle:'My dhikrs', myDhikrsSubtitle:'Add, edit or delete your custom dhikrs.', addDhikrTitle:'Add a dhikr', editDhikrTitle:'Edit dhikr', addThisDhikr:'Add this dhikr', saveChanges:'Save changes', cancelEdit:'Cancel edit', availableDhikrs:'Available dhikrs', edit:'Edit', delete:'Delete',
       translitPlaceholder:'Transliteration (e.g. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Translation (optional)',
-      settingsTitle:'Settings', themeTitle:'App theme', themeHint:'Choose the app appearance. Your theme is saved automatically.', themeDark:'Dark', themeBlue:'Blue', themeGreen:'Green', themePurple:'Purple', themePink:'Pink', settingsSubtitle:'Personalize the app to your preferences.', languageTitle:'Interface language', languageIntro:'Choose the language used for buttons, menus and app messages.', languageLabel:'Language', languageHint:'The change is applied immediately.', speechLanguageNote:'Dhikrs are recognized in Arabic. Voice commands also support English, with Arabic fallback commands « توقف », « استمر » and « صفر ».', comfortTitle:'Comfort and display', vibrationLabel:'Vibrate when counting', vibrationHint:'Light haptic feedback on compatible mobile devices.', arabicSizeLabel:'Arabic text size', arabicSizeHint:'Adjusts only the main dhikr text.', confirmResetLabel:'Confirm resets', confirmResetHint:'Prevents accidental resets.', dataTitle:'Data', dataText:'Custom dhikrs, counters and settings are saved locally in your browser.',
+      asmaTitle:'Asma', asmaSubtitle:'The 99 beautiful names of Allah — Al-Asma al-Husna.', asmaSearchPlaceholder:'Search a name…', asmaSearchAria:'Search the 99 names', asmaNoResults:'No name found.', asmaDuaLabel:'Example invocation', settingsTitle:'Settings', themeTitle:'App theme', themeHint:'Choose the app appearance. Your theme is saved automatically.', themeDark:'Dark', themeBlue:'Blue', themeGreen:'Green', themePurple:'Purple', themePink:'Pink', settingsSubtitle:'Personalize the app to your preferences.', languageTitle:'Interface language', languageIntro:'Choose the language used for buttons, menus and app messages.', languageLabel:'Language', languageHint:'The change is applied immediately.', speechLanguageNote:'Dhikrs are recognized in Arabic. Voice commands also support English, with Arabic fallback commands « توقف », « استمر » and « صفر ».', comfortTitle:'Comfort and display', vibrationLabel:'Vibrate when counting', vibrationHint:'Light haptic feedback on compatible mobile devices.', arabicSizeLabel:'Arabic text size', arabicSizeHint:'Adjusts only the main dhikr text.', confirmResetLabel:'Confirm resets', confirmResetHint:'Prevents accidental resets.', dataTitle:'Data', dataText:'Custom dhikrs, counters and settings are saved locally in your browser.',
       confirmReset:'Reset the counter to zero?', resetDone:'This dhikr counter was reset', targetReached:'target reached', heard:'Heard', notRecognized:'Not recognized', phraseNotRecognized:'Phrase not recognized', sayDhikrMeasure:'Say the dhikr, I am measuring the time', durationSet:'Duration set to ', timerStarted:'Timer started', timerStopped:'Timer stopped',
       deleteConfirm:n=>'Delete “'+n+'”?', deleted:n=>'“'+n+'” deleted.', duplicate:'A dhikr with this transliteration already exists.', modified:n=>'“'+n+'” updated.', added:n=>'“'+n+'” added to the dhikr list.', invalidTranslit:'Please enter a valid transliteration.', switched:(n,c)=>'Dhikr changed to '+n+', counter '+c,
       micDenied:'Microphone access denied by the browser', micDeniedShort:'Microphone access denied', micPermission:'Allow microphone access to enable voice recognition', micPermissionError:'Unable to obtain microphone permission', noMic:'No microphone detected', networkRetry:'Microphone active — network problem, retrying', micStartError:'Unable to start the microphone', unknownError:'unknown error', safariSpeechUnavailable:'Safari allows microphone access, but Web Speech recognition is not available in this mode. Try opening Tasbih+ directly in Safari.', speechUnsupported:'Voice recognition is not supported by this browser. The counter and buttons can still be used by touch. Try Chrome, Edge, or a recent version of Safari.'
@@ -1035,7 +1289,7 @@
   let appSettings = { vibration:true, arabicSize:40, confirmReset:true, language:'fr', theme:'blue' };
 
   function showView(viewId){
-    ['mainView','manageView','settingsView'].forEach(id => {
+    ['mainView','manageView','asmaView','settingsView'].forEach(id => {
       const node = document.getElementById(id);
       if(node) node.hidden = id !== viewId;
     });
@@ -1047,6 +1301,82 @@
   }
 
   document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
+
+
+  function normalizeAsmaSearch(value){
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g,'')
+      .replace(/[أإآٱ]/g,'ا')
+      .replace(/ى/g,'ي')
+      .replace(/ة/g,'ه')
+      .replace(/[’‘ʻʿ'`´-]/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function renderAsma(){
+    if(!el.asmaGrid) return;
+    const query = normalizeAsmaSearch(el.asmaSearch ? el.asmaSearch.value : '');
+    el.asmaGrid.innerHTML = '';
+
+    const matches = ASMA_NAMES
+      .map((item, index) => ({...item, index}))
+      .filter(item => {
+        if(!query) return true;
+        return normalizeAsmaSearch(item.ar).includes(query) ||
+               normalizeAsmaSearch(item.translit).includes(query) ||
+               normalizeAsmaSearch(item.meaning).includes(query);
+      });
+
+    if(!matches.length){
+      const empty = document.createElement('p');
+      empty.className = 'asma-empty';
+      empty.textContent = t('asmaNoResults');
+      el.asmaGrid.appendChild(empty);
+      return;
+    }
+
+    matches.forEach(item => {
+      const card = document.createElement('article');
+      card.className = 'asma-card';
+
+      const number = document.createElement('span');
+      number.className = 'asma-number';
+      number.textContent = String(item.index + 1);
+
+      const ar = document.createElement('p');
+      ar.className = 'asma-ar';
+      ar.lang = 'ar';
+      ar.dir = 'rtl';
+      ar.textContent = item.ar;
+
+      const translit = document.createElement('p');
+      translit.className = 'asma-translit';
+      translit.textContent = item.translit;
+
+      const meaning = document.createElement('p');
+      meaning.className = 'asma-meaning';
+      meaning.textContent = item.meaning;
+
+      const dua = document.createElement('p');
+      dua.className = 'asma-dua';
+      const duaLabel = document.createElement('span');
+      duaLabel.className = 'asma-dua-label';
+      duaLabel.textContent = t('asmaDuaLabel');
+      const duaText = document.createElement('span');
+      duaText.textContent = item.dua;
+      dua.append(duaLabel, duaText);
+
+      card.append(number, ar, translit, meaning, dua);
+      el.asmaGrid.appendChild(card);
+    });
+  }
+
+  if(el.asmaSearch){
+    el.asmaSearch.addEventListener('input', renderAsma);
+  }
 
   function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }catch(e){} }
   function applySettings(){
@@ -1072,7 +1402,7 @@
     document.querySelectorAll('.theme-choice').forEach(btn=>btn.setAttribute('aria-pressed', btn.dataset.theme===chosen ? 'true' : 'false'));
   }
   document.querySelectorAll('.theme-choice').forEach(btn=>btn.addEventListener('click',()=>{ appSettings.theme=btn.dataset.theme; applyTheme(appSettings.theme); saveSettings(); }));
-  el.languageSetting.addEventListener('change',()=>{ appSettings.language=el.languageSetting.value; saveSettings(); applyLanguage(); });
+  el.languageSetting.addEventListener('change',()=>{ appSettings.language=el.languageSetting.value; saveSettings(); applyLanguage(); renderAsma(); });
   el.vibrationSetting.addEventListener('change',()=>{ appSettings.vibration=el.vibrationSetting.checked; saveSettings(); });
   el.arabicSizeSetting.addEventListener('input',()=>{ appSettings.arabicSize=Number(el.arabicSizeSetting.value); applySettings(); saveSettings(); });
   el.confirmResetSetting.addEventListener('change',()=>{ appSettings.confirmReset=el.confirmResetSetting.checked; saveSettings(); });
@@ -1776,8 +2106,18 @@
     const idx = findMatchingPhrase(norm);
     if(idx === -1){
       announce(t('phraseNotRecognized'));
-      if(el.heardText) el.heardText.textContent = t('notRecognized') + ' : « ' + raw.trim() + ' »';
+      if(el.heardText){
+        el.heardText.textContent = t('notRecognized') + ' : « ' + raw.trim() + ' »';
+        el.heardText.setAttribute('dir', 'auto');
+        el.heardText.removeAttribute('lang');
+      }
       return;
+    }
+    const vocalizedArabic = phrases[idx] && phrases[idx].ar ? phrases[idx].ar : '';
+    if(vocalizedArabic && el.heardText){
+      el.heardText.textContent = t('heard') + ' : « ' + vocalizedArabic + ' »';
+      el.heardText.setAttribute('dir', 'rtl');
+      el.heardText.setAttribute('lang', 'ar');
     }
     if(idx !== state.phraseIndex){
       setPhrase(idx, true);
@@ -1931,6 +2271,7 @@
   // init
   loadPhraseCounts();
   loadSettings();
+  renderAsma();
   renderPhraseChoices();
   renderTargetChoices();
   setPhrase(0, false);
