@@ -1776,18 +1776,8 @@
     const idx = findMatchingPhrase(norm);
     if(idx === -1){
       announce(t('phraseNotRecognized'));
-      if(el.heardText){
-        el.heardText.textContent = t('notRecognized') + ' : « ' + raw.trim() + ' »';
-        el.heardText.setAttribute('dir', 'auto');
-        el.heardText.removeAttribute('lang');
-      }
+      if(el.heardText) el.heardText.textContent = t('notRecognized') + ' : « ' + raw.trim() + ' »';
       return;
-    }
-    const vocalizedArabic = phrases[idx] && phrases[idx].ar ? phrases[idx].ar : '';
-    if(vocalizedArabic && el.heardText){
-      el.heardText.textContent = t('heard') + ' : « ' + vocalizedArabic + ' »';
-      el.heardText.setAttribute('dir', 'rtl');
-      el.heardText.setAttribute('lang', 'ar');
     }
     if(idx !== state.phraseIndex){
       setPhrase(idx, true);
