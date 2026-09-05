@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v17-nav-4';
+const CACHE_NAME = 'tasbih-plus-v40-drag-reorder';
 const APP_SHELL = [
   './',
   './index.html',
