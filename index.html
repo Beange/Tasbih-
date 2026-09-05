@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tasbih">
+<meta name="theme-color" content="#F7D9E3">
+<title>Tasbih+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F7D9E3;
+    --bg-panel: #FFF5F8;
+    --bg-panel-2: #F2D0DC;
+    --gold: #9C3B54;
+    --gold-soft: rgba(156,59,84,0.14);
+    --text: #3B1220;
+    --text-muted: #7A4256;
+    --listening: #3F8F6F;
+    --reset: #C1443C;
+    --ring-track: rgba(59,18,32,0.10);
+  }
+
+
+  /* Thèmes personnalisables */
+  html[data-theme="dark"]{
+    --bg:#121416; --bg-panel:#1C2024; --bg-panel-2:#272C31; --gold:#D9B56D; --gold-soft:rgba(217,181,109,.16);
+    --text:#F5F1E8; --text-muted:#B8B1A5; --listening:#66B892; --reset:#E07068; --ring-track:rgba(255,255,255,.10);
+  }
+  html[data-theme="blue"]{
+    --bg:#DCEAF7; --bg-panel:#F5FAFF; --bg-panel-2:#C9DDF0; --gold:#356D9B; --gold-soft:rgba(53,109,155,.15);
+    --text:#17334C; --text-muted:#58738A; --listening:#31866B; --reset:#BF4C48; --ring-track:rgba(23,51,76,.10);
+  }
+  html[data-theme="green"]{
+    --bg:#DDEDE3; --bg-panel:#F5FBF7; --bg-panel-2:#C9E1D1; --gold:#3F7656; --gold-soft:rgba(63,118,86,.15);
+    --text:#193A27; --text-muted:#5B7766; --listening:#2F8B62; --reset:#B94B45; --ring-track:rgba(25,58,39,.10);
+  }
+  html[data-theme="purple"]{
+    --bg:#E9E0F2; --bg-panel:#FBF7FE; --bg-panel-2:#DAC9E8; --gold:#76539B; --gold-soft:rgba(118,83,155,.15);
+    --text:#38224C; --text-muted:#765F88; --listening:#43896F; --reset:#BE4D58; --ring-track:rgba(56,34,76,.10);
+  }
+  html[data-theme="pink"]{
+    --bg:#F7D9E3; --bg-panel:#FFF5F8; --bg-panel-2:#F2D0DC; --gold:#9C3B54; --gold-soft:rgba(156,59,84,.14);
+    --text:#3B1220; --text-muted:#7A4256; --listening:#3F8F6F; --reset:#C1443C; --ring-track:rgba(59,18,32,.10);
+  }
+  html[data-theme="dark"] .bottom-nav{background:rgba(28,32,36,.94);border-color:rgba(255,255,255,.10);box-shadow:0 12px 35px rgba(0,0,0,.28)}
+
+  /* Contraste renforcé pour le mode sombre */
+  html[data-theme="dark"] .hero-card{
+    background:rgba(28,32,36,.96);
+    border-color:rgba(217,181,109,.24);
+    box-shadow:0 18px 50px rgba(0,0,0,.28);
+  }
+  html[data-theme="dark"] .quick-chip{
+    background:#272C31;
+    border-color:rgba(255,255,255,.12);
+    color:#CFC8BC;
+  }
+  html[data-theme="dark"] .quick-chip strong{ color:#F7F3EA; }
+  html[data-theme="dark"] .action-btn.mic[data-active="false"]{
+    background:rgba(217,181,109,.16);
+    color:#F1CD83;
+    border:1px solid rgba(217,181,109,.42);
+  }
+  html[data-theme="dark"] .action-btn.mic[data-active="true"]{
+    background:#66B892;
+    color:#09231B;
+  }
+  html[data-theme="dark"] .action-btn.reset{
+    background:rgba(224,112,104,.10);
+    color:#FF9B94;
+    border-color:#E88780;
+  }
+  html[data-theme="dark"] .action-btn.pause{
+    background:rgba(217,181,109,.08);
+    color:#F1CD83;
+    border-color:#D9B56D;
+  }
+  html[data-theme="dark"] .action-btn.pause[data-active="true"]{
+    background:#D9B56D;
+    color:#1E1B14;
+  }
+  html[data-theme="dark"] .manage-card,
+  html[data-theme="dark"] .setting-card{
+    background:#272C31;
+    border-color:rgba(255,255,255,.10);
+  }
+  html[data-theme="dark"] input,
+  html[data-theme="dark"] select,
+  html[data-theme="dark"] textarea{
+    background:#202428;
+    color:#F5F1E8;
+    border-color:rgba(255,255,255,.16);
+  }
+  html[data-theme="dark"] input::placeholder,
+  html[data-theme="dark"] textarea::placeholder{ color:#9F988D; }
+  html[data-theme="dark"] .choice-btn{
+    background:#272C31;
+    color:#F5F1E8;
+    border-color:rgba(217,181,109,.28);
+  }
+  html[data-theme="dark"] .choice-btn[aria-pressed="true"],
+  html[data-theme="dark"] .choice-btn.active{
+    background:rgba(217,181,109,.18);
+    color:#F1CD83;
+    border-color:#D9B56D;
+  }
+
+  .theme-picker{display:grid;grid-template-columns:repeat(5,1fr);gap:.55rem;width:100%;margin-top:.8rem}
+  .theme-choice{min-width:0;border:1px solid rgba(0,0,0,.10);background:var(--bg-panel);color:var(--text);border-radius:14px;padding:.65rem .35rem;font:600 .72rem 'Inter',sans-serif;cursor:pointer}
+  .theme-choice[aria-pressed="true"]{outline:2px solid var(--gold);outline-offset:1px;background:var(--gold-soft);color:var(--gold)}
+  .theme-swatch{display:block;width:28px;height:28px;border-radius:50%;margin:0 auto .35rem;border:2px solid rgba(255,255,255,.7);box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+  .theme-choice[data-theme="dark"] .theme-swatch{background:#1C2024}.theme-choice[data-theme="blue"] .theme-swatch{background:#78A9D1}.theme-choice[data-theme="green"] .theme-swatch{background:#78A98A}.theme-choice[data-theme="purple"] .theme-swatch{background:#9A79B8}.theme-choice[data-theme="pink"] .theme-swatch{background:#D77B9A}
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100%;
+  }
+
+  body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: max(clamp(1.25rem, 4vw, 3rem), env(safe-area-inset-top)) clamp(1rem, 5vw, 2rem) max(3rem, env(safe-area-inset-bottom));
+    gap: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  #mainView, #manageView{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+    gap: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px;
+    padding:0; margin:-1px; overflow:hidden;
+    clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  header{
+    text-align:center;
+    max-width: 30rem;
+  }
+
+  header h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin: 0 0 0.4rem;
+    letter-spacing: 0.01em;
+  }
+
+  header p{
+    margin:0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height:1.5;
+  }
+
+  /* status bar */
+  .status{
+    display:flex;
+    align-items:center;
+    gap:0.6rem;
+    background: var(--bg-panel);
+    border: 1px solid rgba(156,59,84,0.25);
+    border-radius: 999px;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  .status .dot{
+    width:0.65rem; height:0.65rem; border-radius:50%;
+    background: var(--reset);
+    flex-shrink:0;
+  }
+  .status.on .dot{ background: var(--listening); }
+  .status.on{ color: var(--text); }
+
+  @media (prefers-reduced-motion: no-preference){
+    .status.on .dot{ animation: pulse 1.8s ease-in-out infinite; }
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:0.35; }
+  }
+
+  /* main counter */
+  .counter-wrap{
+    position:relative;
+    width: min(72vw, 300px);
+    height: min(72vw, 300px);
+  }
+
+  .counter-btn{
+    position:absolute; inset:0;
+    border-radius:50%;
+    border: none;
+    background: var(--bg-panel);
+    color: var(--text);
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:0.2rem;
+    font-family:'Fraunces', serif;
+  }
+
+  .counter-btn:focus-visible{
+    outline: 3px solid var(--gold);
+    outline-offset: 4px;
+  }
+
+  .counter-btn .count{
+    font-size: clamp(3.5rem, 16vw, 6rem);
+    font-weight:600;
+    line-height:1;
+  }
+
+  .counter-btn .target-label{
+    font-family:'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  svg.ring{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    transform: rotate(-90deg);
+    pointer-events:none;
+  }
+  .ring circle{ fill:none; stroke-width: 8; }
+  .ring .track{ stroke: var(--ring-track); }
+  .ring .progress{
+    stroke: var(--gold);
+    stroke-linecap: round;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .ring .progress{ transition: stroke-dashoffset 0.4s ease; }
+  }
+
+  /* phrase */
+  .phrase{
+    text-align:center;
+  }
+  .phrase .arabic{
+    font-family:'Fraunces', serif;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    margin: 0 0 0.3rem;
+  }
+  .phrase .translit{
+    margin:0;
+    font-weight:600;
+    font-size:1.05rem;
+  }
+  .phrase .french{
+    margin: 0.15rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* panels */
+  .panel{
+    width:100%;
+    max-width: 26rem;
+    background: var(--bg-panel);
+    border: 1px solid rgba(156,59,84,0.2);
+    border-radius: 18px;
+    padding: 1.1rem 1.2rem 1.3rem;
+  }
+  .panel h2{
+    font-family:'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight:600;
+    margin: 0 0 0.75rem;
+    color: var(--text);
+  }
+
+  .choice-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.6rem;
+  }
+
+  .choice-btn{
+    flex:1 1 auto;
+    min-width: 5.5rem;
+    min-height: 3rem;
+    background: var(--bg-panel-2);
+    color: var(--text);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-family:'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight:500;
+    cursor:pointer;
+    padding: 0.5rem 0.7rem;
+  }
+  .choice-btn:hover{ border-color: rgba(156,59,84,0.4); }
+  .choice-btn:focus-visible{ outline: 3px solid var(--gold); outline-offset: 2px; }
+  .choice-btn[aria-pressed="true"]{
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .action-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.7rem;
+    margin-top: 0.9rem;
+  }
+  .action-btn{
+    flex:1;
+    min-height: 3.2rem;
+    border-radius: 12px;
+    border: none;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size: 0.95rem;
+    cursor:pointer;
+  }
+  .action-btn.reset{
+    background: transparent;
+    color: var(--reset);
+    border: 1px solid var(--reset);
+  }
+  .action-btn.reset:focus-visible{ outline: 3px solid var(--reset); outline-offset: 2px; }
+  .action-btn.mic{
+    background: var(--listening);
+    color: #08201B;
+  }
+  .action-btn.mic:focus-visible{ outline: 3px solid var(--gold); outline-offset: 2px; }
+  .action-btn.mic[data-active="false"]{
+    background: var(--gold-soft);
+    color: var(--gold);
+  }
+  .action-btn.pause{
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    flex-basis: 100%;
+  }
+  .action-btn.pause[data-active="true"]{
+    background: var(--gold);
+    color: #2A2007;
+  }
+  .action-btn.pause:focus-visible{ outline: 3px solid var(--gold); outline-offset: 2px; }
+  .action-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+
+  .status.paused .dot{ background: var(--gold); }
+  .status.paused{ color: var(--gold); }
+
+  .support-note{
+    max-width: 26rem;
+    text-align:center;
+    color: var(--reset);
+    font-size: 0.85rem;
+    line-height:1.5;
+  }
+
+  .env-warning{
+    max-width: 26rem;
+    text-align:center;
+    background: rgba(199,122,94,0.12);
+    border: 1px solid var(--reset);
+    color: var(--text);
+    font-size: 0.88rem;
+    line-height:1.55;
+    border-radius: 14px;
+    padding: 0.9rem 1.1rem;
+  }
+  .env-warning b{ color: var(--reset); }
+
+  .voice-row{
+    display:flex;
+    gap:0.6rem;
+    flex-wrap:wrap;
+  }
+
+  #phraseChoices,
+  #manageList{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(9rem, 1fr));
+    gap:0.6rem;
+  }
+
+  #phraseChoices .choice-btn,
+  #manageList .choice-btn{
+    width:100%;
+    min-width:0;
+  }
+
+  .saved-dhikr::after{
+    content:'Enregistré';
+    display:block;
+    margin-top:0.15rem;
+    font-size:0.7rem;
+    opacity:0.7;
+  }
+
+  .manage-card{
+    display:flex; flex-direction:column; gap:0.55rem;
+    background:var(--bg-panel-2); border:1px solid rgba(156,59,84,0.22);
+    border-radius:14px; padding:0.7rem;
+  }
+  .manage-actions{ display:flex; gap:0.5rem; }
+  .manage-actions .choice-btn{ min-height:2.5rem; min-width:0; }
+  .arabic-input{ direction:rtl; text-align:right; font-family:'Fraunces', serif; font-size:1.1rem !important; }
+
+
+  /* ---- Interface moderne ---- */
+  body{
+    background:
+      radial-gradient(circle at top, rgba(255,255,255,.55), transparent 34rem),
+      var(--bg);
+    gap:1rem;
+  }
+  #mainView, #manageView{ max-width:34rem; gap:1rem; }
+  .app-shell{ width:100%; display:flex; flex-direction:column; gap:1rem; }
+  .topbar{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:.8rem; }
+  .brand{ min-width:0; }
+  .brand h1{ margin:0; font-family:'Fraunces',serif; font-size:1.45rem; font-weight:600; }
+  .brand p{ margin:.15rem 0 0; font-size:.78rem; color:var(--text-muted); }
+  .top-action{ flex:0 0 auto; min-width:auto; padding:.65rem .9rem; min-height:2.7rem; border-radius:999px; }
+
+  .hero-card{
+    width:100%;
+    background:rgba(255,245,248,.78);
+    backdrop-filter: blur(12px);
+    border:1px solid rgba(156,59,84,.18);
+    box-shadow:0 18px 50px rgba(80,26,45,.08);
+    border-radius:28px;
+    padding:1.1rem 1rem 1.25rem;
+    display:flex; flex-direction:column; align-items:center; gap:1rem;
+  }
+  .phrase{ width:100%; }
+  .phrase .arabic{ font-size:clamp(2rem, 8vw, 3rem); line-height:1.5; margin:0; }
+  .phrase .translit{ margin-top:.2rem; font-size:1rem; }
+  .phrase .french{ margin-top:.2rem; }
+
+  .counter-wrap{ width:min(78vw, 310px); height:min(78vw, 310px); }
+  .counter-btn{ box-shadow:inset 0 0 0 1px rgba(156,59,84,.08); }
+  .counter-btn .count{ font-size:clamp(4rem,18vw,6.6rem); }
+  .counter-btn .target-label{
+    margin-top:.3rem; padding:.3rem .7rem; border-radius:999px;
+    background:var(--gold-soft); color:var(--gold); font-weight:700;
+  }
+
+  .quick-status{ width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
+  .quick-chip{
+    min-width:0; display:flex; align-items:center; justify-content:center; gap:.4rem;
+    background:rgba(255,255,255,.56); border:1px solid rgba(156,59,84,.14);
+    border-radius:14px; padding:.7rem .45rem; font-size:.78rem; color:var(--text-muted);
+  }
+  .quick-chip strong{ color:var(--text); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .quick-dot{ width:.5rem; height:.5rem; border-radius:50%; background:var(--reset); flex:0 0 auto; }
+  .quick-chip.on .quick-dot{ background:var(--listening); }
+  .quick-chip.paused .quick-dot{ background:var(--gold); }
+
+  .primary-controls{ width:100%; display:grid; grid-template-columns:1.35fr 1fr; gap:.65rem; }
+  .primary-controls .action-btn{ min-height:3.4rem; }
+  .primary-controls .pause{ grid-column:1 / -1; }
+
+  .section-stack{ width:100%; display:flex; flex-direction:column; gap:.7rem; }
+  details.panel{ padding:0; overflow:hidden; }
+  details.panel > summary{
+    list-style:none; cursor:pointer; padding:1rem 1.1rem; font-weight:700;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  }
+  details.panel > summary::-webkit-details-marker{ display:none; }
+  details.panel > summary::after{ content:'＋'; color:var(--gold); font-size:1.15rem; }
+  details.panel[open] > summary::after{ content:'−'; }
+  .panel-content{ padding:0 1.1rem 1.1rem; }
+  .panel-content .choice-row{ margin-top:.1rem; }
+
+  .status{ display:none; }
+  .env-warning, .support-note{ margin:.1rem 0; }
+
+  #manageView header{ width:100%; text-align:left; }
+  #manageView .panel{ max-width:none; }
+  .manage-card{ background:rgba(255,255,255,.58); }
+  .manage-card > .choice-btn{ text-align:left; }
+  .manage-actions .choice-btn{ font-size:.82rem; }
+
+  @media (max-width:420px){
+    .quick-status{ grid-template-columns:1fr; }
+    .quick-chip{ justify-content:flex-start; padding:.65rem .8rem; }
+    .primary-controls{ grid-template-columns:1fr; }
+    .primary-controls .pause{ grid-column:auto; }
+  }
+
+
+  /* ---- Navigation 4 sections ---- */
+  body{ padding-bottom:max(6.2rem, calc(5.4rem + env(safe-area-inset-bottom))); }
+  .app-view{ width:100%; max-width:34rem; }
+  #settingsView{ display:flex; flex-direction:column; gap:1rem; align-items:center; }
+  .page-header{ width:100%; text-align:left; }
+  .page-header h1{ margin:0; font-family:'Fraunces',serif; font-size:1.55rem; }
+  .page-header p{ margin:.3rem 0 0; color:var(--text-muted); font-size:.88rem; line-height:1.45; }
+  .bottom-nav{
+    position:fixed; z-index:50; left:50%; transform:translateX(-50%); bottom:max(.75rem, env(safe-area-inset-bottom));
+    width:min(calc(100% - 1.25rem), 34rem); display:grid; grid-template-columns:repeat(3,1fr); gap:.35rem;
+    padding:.45rem; border-radius:20px; background:rgba(255,245,248,.92); backdrop-filter:blur(18px);
+    border:1px solid rgba(156,59,84,.18); box-shadow:0 12px 35px rgba(80,26,45,.16);
+  }
+  .nav-btn{ min-width:0; min-height:3.15rem; border:0; border-radius:15px; background:transparent; color:var(--text-muted); font:600 .72rem 'Inter',sans-serif; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.2rem; }
+  .nav-btn .nav-icon{ font-size:1.05rem; line-height:1; }
+  .nav-btn[aria-current="page"]{ background:var(--gold-soft); color:var(--gold); }
+  @media(max-width:420px){
+    .bottom-nav{ gap:.2rem; }
+    .nav-btn{ font-size:.66rem; min-height:3rem; }
+  }
+
+
+  /* ---- Trois interfaces indépendantes ---- */
+  .app-view{
+    width:100%;
+    max-width:34rem;
+    min-height:calc(100dvh - 7.4rem);
+    margin:0 auto;
+  }
+  .app-view[hidden]{ display:none !important; }
+  #mainView, #manageView, #settingsView{
+    animation:viewIn .18s ease-out;
+  }
+  #mainView{ display:block; }
+  #manageView, #settingsView{
+    flex-direction:column;
+    gap:1rem;
+  }
+  #manageView:not([hidden]), #settingsView:not([hidden]){ display:flex; }
+  #manageView .page-header, #settingsView .page-header{
+    padding:.25rem .15rem .1rem;
+  }
+  #manageView .panel, #settingsView .panel{
+    width:100%;
+    max-width:none;
+  }
+  .topbar{ align-items:flex-start; }
+  @keyframes viewIn{
+    from{ opacity:0; transform:translateY(5px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+
+  /* Réglages enrichis */
+  .settings-hero{
+    width:100%; border:1px solid rgba(156,59,84,.16); border-radius:22px;
+    background:linear-gradient(145deg,var(--bg-panel),var(--bg-panel-2));
+    padding:1.05rem; box-shadow:0 12px 30px rgba(70,25,40,.07);
+  }
+  .settings-hero h2{ margin:0 0 .3rem; font-size:1rem; }
+  .settings-hero p{ margin:0; color:var(--text-muted); font-size:.84rem; line-height:1.5; }
+  .settings-grid{ width:100%; display:grid; gap:.85rem; }
+  .setting-card{
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    padding:.95rem 1rem; border-radius:16px; background:var(--bg-panel-2);
+    border:1px solid rgba(156,59,84,.12);
+  }
+  .setting-card .setting-copy{ min-width:0; }
+  .setting-card label{ display:block; font-weight:700; font-size:.9rem; margin-bottom:.18rem; }
+  .setting-card small{ display:block; color:var(--text-muted); font-size:.76rem; line-height:1.4; }
+  .setting-icon{
+    flex:0 0 2.35rem; width:2.35rem; height:2.35rem; border-radius:12px;
+    display:grid; place-items:center; background:var(--gold-soft); color:var(--gold); font-size:1.05rem;
+  }
+  .setting-main{ display:flex; align-items:center; gap:.75rem; min-width:0; flex:1; }
+  .language-select{
+    min-width:128px; min-height:2.6rem; border-radius:12px; border:1px solid rgba(156,59,84,.26);
+    background:var(--bg-panel); color:var(--text); padding:.35rem .65rem; font:600 .84rem 'Inter',sans-serif;
+  }
+  .settings-section-title{ margin:0 0 .75rem; font-size:.86rem; letter-spacing:.03em; text-transform:uppercase; color:var(--text-muted); }
+  .setting-card input[type="checkbox"]{ width:1.2rem; height:1.2rem; accent-color:var(--gold); flex:0 0 auto; }
+  .setting-card input[type="range"]{ width:125px; accent-color:var(--gold); }
+  .language-note{
+    margin:.75rem 0 0; padding:.72rem .8rem; border-radius:13px; background:var(--gold-soft);
+    color:var(--text-muted); font-size:.76rem; line-height:1.45;
+  }
+  @media(max-width:520px){
+    .setting-card{ align-items:flex-start; flex-wrap:wrap; }
+    .setting-card > input[type="range"], .setting-card > .language-select{ width:100%; min-width:0; }
+  }
+
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="application-name" content="Tasbih+">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Tasbih+">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+
+  <div id="mainView" class="app-view">
+    <div class="app-shell">
+      <div class="topbar">
+        <div class="brand">
+          <h1>Tasbih+</h1>
+          <p data-i18n="brandSubtitle">Votre compteur vocal de dhikr.</p>
+        </div>
+      </div>
+
+      <p class="env-warning" id="envWarning" hidden></p>
+
+      <div class="status" id="statusBar">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="statusText" data-i18n="micPaused">Micro en pause</span>
+      </div>
+      <p id="heardText" style="margin:-0.55rem 0 0; min-height:1.35em; text-align:center; color:var(--text-muted); font-size:0.82rem;" aria-live="polite"></p>
+
+      <section class="hero-card" aria-label="Compteur de dhikr" data-i18n-aria="counterAria">
+        <div class="phrase">
+          <p class="arabic" id="phraseArabic" lang="ar" dir="rtl">سُبْحَانَ الله</p>
+          <p class="translit" id="phraseTranslit">Subhanallah</p>
+          <p class="french" id="phraseFrench">Gloire à Dieu</p>
+        </div>
+
+        <div class="counter-wrap">
+          <svg class="ring" viewBox="0 0 300 300" aria-hidden="true">
+            <circle class="track" cx="150" cy="150" r="130"></circle>
+            <circle class="progress" id="ringProgress" cx="150" cy="150" r="130" stroke-dasharray="816.8" stroke-dashoffset="816.8"></circle>
+          </svg>
+          <button class="counter-btn" id="counterBtn" aria-label="Toucher pour compter">
+            <span class="count" id="countDisplay">0</span>
+            <span class="target-label" id="targetLabel">0 / 33</span>
+          </button>
+        </div>
+
+        <div class="quick-status" aria-label="État de la session">
+          <div class="quick-chip" id="quickMic"><span class="quick-dot" aria-hidden="true"></span><strong id="quickMicText" data-i18n="micOff">Micro coupé</strong></div>
+          <div class="quick-chip"><span aria-hidden="true">⏱</span><strong id="quickDuration" data-i18n="durationUnset">Durée non réglée</strong></div>
+          <div class="quick-chip" id="quickPause"><span class="quick-dot" aria-hidden="true"></span><strong id="quickPauseText" data-i18n="countingActive">Comptage actif</strong></div>
+        </div>
+
+        <div class="primary-controls">
+          <button class="action-btn mic" id="micToggle" data-active="false" data-i18n="micEnable">Activer le micro</button>
+          <button class="action-btn reset" id="resetBtn" data-i18n="reset">Réinitialiser</button>
+          <button class="action-btn pause" id="pauseToggle" data-active="false" data-i18n="pause">Mettre en pause</button>
+        </div>
+      </section>
+
+      <div class="section-stack">
+        <details class="panel" open>
+          <summary data-i18n="chooseDhikr">Choisir le dhikr</summary>
+          <div class="panel-content"><div class="choice-row" id="phraseChoices"></div></div>
+        </details>
+
+        <details class="panel">
+          <summary data-i18n="target">Objectif</summary>
+          <div class="panel-content"><div class="choice-row" id="targetChoices"></div></div>
+        </details>
+
+        <details class="panel">
+          <summary data-i18n="timerTitle">Minuteur du dhikr</summary>
+          <div class="panel-content">
+            <div style="text-align:center; margin-bottom:0.9rem;">
+              <span id="stopwatchDisplay" style="font-family:'Fraunces',serif; font-size:2.2rem; font-weight:600;">0,0 s</span>
+            </div>
+            <div class="action-row" style="margin-top:0;">
+              <button class="action-btn" id="measureBtn" style="background:var(--gold-soft); color:var(--gold); border:1px solid var(--gold);" data-i18n="measureOne">Mesurer une répétition</button>
+            </div>
+            <div class="choice-row" style="margin-top:0.9rem; align-items:center;">
+              <button class="choice-btn" id="durationMinus" style="flex:0 0 4.5rem;" aria-label="Diminuer la durée de 0,1 seconde">−0,1 s</button>
+              <span id="durationDisplay" style="flex:1; text-align:center; font-weight:600;" data-i18n="durationUnset">Durée non réglée</span>
+              <button class="choice-btn" id="durationPlus" style="flex:0 0 4.5rem;" aria-label="Augmenter la durée de 0,1 seconde">+0,1 s</button>
+            </div>
+            <div class="action-row">
+              <button class="action-btn" id="autoTimerToggle" data-active="false" disabled style="background:var(--gold-soft); color:var(--gold); border:1px solid var(--gold);" data-i18n="timerStart">Démarrer le minuteur</button>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <p class="support-note" id="supportNote" hidden data-i18n="speechUnsupported">
+        La reconnaissance vocale n'est pas prise en charge par ce navigateur. Le cercle et les boutons restent utilisables au toucher. Essayez Chrome ou Edge pour la commande vocale.
+      </p>
+    </div>
+  </div>
+
+  <div id="manageView" class="app-view" hidden>
+    <div class="page-header">
+      <h1 data-i18n="myDhikrsTitle">Mes dhikrs</h1>
+      <p data-i18n="myDhikrsSubtitle">Ajoutez, modifiez ou supprimez vos dhikrs personnalisés.</p>
+    </div>
+
+    <div class="panel">
+      <h2 id="formTitle" data-i18n="addDhikrTitle">Ajouter un dhikr</h2>
+      <form id="addForm">
+        <div class="voice-row" style="margin-bottom:0.6rem;">
+          <input type="text" id="addTranslit" placeholder="Translittération (ex. La ilaha illallah)" data-i18n-placeholder="translitPlaceholder" required
+            style="flex:1 1 100%; min-height:2.8rem; background:var(--bg-panel-2); color:var(--text); border:1px solid rgba(156,59,84,0.3); border-radius:12px; padding:0.4rem 0.7rem; font-family:'Inter',sans-serif; font-size:16px;">
+        </div>
+        <div class="voice-row" style="margin-bottom:0.6rem;">
+          <input type="text" id="addArabic" class="arabic-input" lang="ar" dir="rtl" placeholder="الذكر بالعربية (اختياري)" data-i18n-placeholder="arabicPlaceholder"
+            style="flex:1 1 100%; min-height:2.8rem; background:var(--bg-panel-2); color:var(--text); border:1px solid rgba(156,59,84,0.3); border-radius:12px; padding:0.4rem 0.7rem;">
+        </div>
+        <div class="voice-row" style="margin-bottom:0.6rem;">
+          <input type="text" id="addFrench" placeholder="Traduction (optionnel)" data-i18n-placeholder="translationPlaceholder"
+            style="flex:1 1 100%; min-height:2.8rem; background:var(--bg-panel-2); color:var(--text); border:1px solid rgba(156,59,84,0.3); border-radius:12px; padding:0.4rem 0.7rem; font-family:'Inter',sans-serif; font-size:16px;">
+        </div>
+        <div class="action-row" style="margin-top:0;">
+          <button type="submit" class="choice-btn" id="saveDhikrBtn" style="width:100%;" data-i18n="addThisDhikr">Ajouter ce dhikr</button>
+          <button type="button" class="choice-btn" id="cancelEditBtn" hidden data-i18n="cancelEdit">Annuler la modification</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2 data-i18n="availableDhikrs">Dhikrs disponibles</h2>
+      <div class="choice-row" id="manageList"></div>
+      <p id="manageStatus" style="margin:0.9rem 0 0; text-align:center; font-size:0.85rem; color:var(--gold); min-height:1.2em;"></p>
+    </div>
+  </div>
+
+  <div id="settingsView" class="app-view" hidden>
+    <div class="page-header">
+      <h1 data-i18n="settingsTitle">Réglages</h1>
+      <p data-i18n="settingsSubtitle">Personnalisez l’application selon vos préférences.</p>
+    </div>
+
+    <div class="settings-hero">
+      <h2 data-i18n="languageTitle">Langue de l’interface</h2>
+      <p data-i18n="languageIntro">Choisissez la langue des boutons, menus et messages de l’application.</p>
+      <div class="setting-card" style="margin-top:.85rem;">
+        <div class="setting-main">
+          <span class="setting-icon" aria-hidden="true">🌐</span>
+          <div class="setting-copy">
+            <label for="languageSetting" data-i18n="languageLabel">Langue</label>
+            <small data-i18n="languageHint">Le changement est appliqué immédiatement.</small>
+          </div>
+        </div>
+        <select id="languageSetting" class="language-select" aria-label="Langue de l’interface" data-i18n-aria="languageTitle">
+          <option value="fr">Français</option>
+          <option value="it">Italiano</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <p class="language-note" data-i18n="speechLanguageNote">La reconnaissance vocale reste en arabe afin de mieux reconnaître les dhikrs récités.</p>
+    </div>
+
+    <div class="panel">
+      <h2 class="settings-section-title" data-i18n="themeTitle">Thème de l’application</h2>
+      <p style="margin:0;color:var(--text-muted);font-size:.84rem;line-height:1.5;" data-i18n="themeHint">Choisissez une ambiance visuelle. Le thème est mémorisé automatiquement.</p>
+      <div class="theme-picker" id="themePicker" role="group" aria-label="Thème">
+        <button type="button" class="theme-choice" data-theme="dark"><span class="theme-swatch"></span><span data-i18n="themeDark">Sombre</span></button>
+        <button type="button" class="theme-choice" data-theme="blue"><span class="theme-swatch"></span><span data-i18n="themeBlue">Bleu</span></button>
+        <button type="button" class="theme-choice" data-theme="green"><span class="theme-swatch"></span><span data-i18n="themeGreen">Vert</span></button>
+        <button type="button" class="theme-choice" data-theme="purple"><span class="theme-swatch"></span><span data-i18n="themePurple">Violet</span></button>
+        <button type="button" class="theme-choice" data-theme="pink"><span class="theme-swatch"></span><span data-i18n="themePink">Rose</span></button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="settings-section-title" data-i18n="comfortTitle">Confort et affichage</h2>
+      <div class="settings-grid">
+        <div class="setting-card">
+          <div class="setting-main"><span class="setting-icon" aria-hidden="true">📳</span><div class="setting-copy"><label for="vibrationSetting" data-i18n="vibrationLabel">Vibration au comptage</label><small data-i18n="vibrationHint">Retour haptique léger sur mobile compatible.</small></div></div>
+          <input id="vibrationSetting" type="checkbox" checked>
+        </div>
+        <div class="setting-card">
+          <div class="setting-main"><span class="setting-icon" aria-hidden="true">ض</span><div class="setting-copy"><label for="arabicSizeSetting" data-i18n="arabicSizeLabel">Taille du texte arabe</label><small data-i18n="arabicSizeHint">Ajuste uniquement le dhikr principal.</small></div></div>
+          <input id="arabicSizeSetting" type="range" min="26" max="56" step="2" value="40">
+        </div>
+        <div class="setting-card">
+          <div class="setting-main"><span class="setting-icon" aria-hidden="true">↺</span><div class="setting-copy"><label for="confirmResetSetting" data-i18n="confirmResetLabel">Confirmer les remises à zéro</label><small data-i18n="confirmResetHint">Évite les réinitialisations accidentelles.</small></div></div>
+          <input id="confirmResetSetting" type="checkbox" checked>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="settings-section-title" data-i18n="dataTitle">Données</h2>
+      <p style="margin:0;color:var(--text-muted);font-size:.86rem;line-height:1.5;" data-i18n="dataText">Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.</p>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Navigation principale" data-i18n-aria="navAria">
+    <button class="nav-btn" type="button" data-view="mainView" aria-current="page"><span class="nav-icon" aria-hidden="true">◉</span><span data-i18n="navTasbih">Tasbih</span></button>
+    <button class="nav-btn" type="button" data-view="manageView"><span class="nav-icon" aria-hidden="true">✦</span><span data-i18n="navDhikrs">Mes dhikrs</span></button>
+    <button class="nav-btn" type="button" data-view="settingsView"><span class="nav-icon" aria-hidden="true">⚙</span><span data-i18n="navSettings">Réglages</span></button>
+  </nav>
+
+  <div class="sr-only" aria-live="polite" id="liveRegion"></div>
+
+<script>
+(function(){
+  const phrases = [
+    { key:'subhanallah', ar:'سُبْحَانَ الله', translit:'Subhanallah', fr:'Gloire à Dieu', patterns:['سبحان الله','سبحانالله','subhanallah','subhan allah','soubhanallah','soubhan allah','soubhanala','subhanala'], duration:null },
+    { key:'alhamdulillah', ar:'الحمد لله', translit:'Alhamdulillah', fr:'Louange à Dieu', patterns:['الحمد لله','الحمدلله','الحمد الله','alhamdulillah','al hamdulillah','alhamdoulillah','al hamdoulillah','hamdulillah','hamdoulillah'], duration:null },
+    { key:'allahuakbar', ar:'الله أكبر', translit:'Allahu Akbar', fr:'Dieu est grand', patterns:['الله اكبر','الله أكبر','اللهاكبر','allahu akbar','allahou akbar','allah ou akbar','allah akbar','allahuakbar'], duration:null },
+    { key:'astaghfirullah', ar:'أستغفر الله', translit:'Astaghfirullah', fr:'Je demande pardon à Dieu', patterns:['استغفر الله','أستغفر الله','استغفرالله','astaghfirullah','astaghfir allah','astagfirullah','astagfir allah','astighfirullah','astighfar'], duration:null }
+  ];
+
+  function normalize(s){
+    return String(s || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      // Retirer les voyelles/signes coraniques arabes afin que « سُبْحَانَ »
+      // et « سبحان » soient comparés de la même façon.
+      .replace(/[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]/g, '')
+      // Unifier les variantes courantes d'alif/hamza et ya en arabe.
+      .replace(/[أإآٱ]/g, 'ا')
+      .replace(/ى/g, 'ي')
+      .replace(/ة/g, 'ه')
+      // Garder à la fois l'alphabet latin, les chiffres et l'arabe.
+      .replace(/[^a-z0-9\u0621-\u063a\u0641-\u064a\s]/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ');
+  }
+
+  function matchPhrase(normalizedTranscript){
+    for(let i = 0; i < phrases.length; i++){
+      const p = phrases[i];
+      for(const pattern of p.patterns){
+        if(normalizedTranscript.includes(pattern)) return i;
+      }
+    }
+    return -1;
+  }
+
+  function levenshtein(a, b){
+    const dp = Array.from({length:b.length + 1}, (_, i) => i);
+    for(let i = 1; i <= a.length; i++){
+      let prev = dp[0]; dp[0] = i;
+      for(let j = 1; j <= b.length; j++){
+        const temp = dp[j];
+        dp[j] = Math.min(dp[j] + 1, dp[j-1] + 1, prev + (a[i-1] === b[j-1] ? 0 : 1));
+        prev = temp;
+      }
+    }
+    return dp[b.length];
+  }
+
+  function compactSpeech(s){
+    return normalize(s).replace(/\s+/g, '');
+  }
+
+  function phraseMatchScore(norm, phrase){
+    const compactNorm = compactSpeech(norm);
+    let best = 0;
+    for(const pattern of phrase.patterns){
+      const normalizedPattern = normalize(pattern);
+      const compactPattern = compactSpeech(pattern);
+      if(!normalizedPattern || !compactPattern) continue;
+      if(norm === normalizedPattern || compactNorm === compactPattern) return 1;
+      if(norm.includes(normalizedPattern) || compactNorm.includes(compactPattern)) best = Math.max(best, 0.96);
+      const maxLen = Math.max(compactNorm.length, compactPattern.length);
+      if(maxLen >= 4){
+        const similarity = 1 - (levenshtein(compactNorm, compactPattern) / maxLen);
+        best = Math.max(best, similarity);
+      }
+    }
+    return best;
+  }
+
+  function findMatchingPhrase(norm){
+    // Un dhikr est court. Cette limite empêche une conversation longue en arrière-plan
+    // d'être interprétée comme une récitation.
+    if(norm.split(' ').length > 7 || norm.length > 60) return -1;
+    let bestIndex = -1;
+    let bestScore = 0;
+    for(let i = 0; i < phrases.length; i++){
+      const score = phraseMatchScore(norm, phrases[i]);
+      // En arabe, Chrome est généralement très proche du texte attendu. Pour une
+      // translittération latine, on garde une petite tolérance aux variations phonétiques.
+      const hasArabic = /[\u0621-\u064a]/.test(norm);
+      const threshold = hasArabic ? 0.72 : (i === state.phraseIndex ? 0.56 : 0.68);
+      if(score >= threshold && score > bestScore){
+        bestScore = score;
+        bestIndex = i;
+      }
+    }
+    return bestIndex;
+  }
+
+  const targets = [33, 99, 100, 0]; // 0 = libre
+  const RADIUS = 130;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+  let state = {
+    count: 0,
+    phraseIndex: 0,
+    phraseCounts: {},
+    phraseReady: false,
+    target: 33,
+    voiceFeedback: false,
+    listening: false,
+    paused: false,
+    stopwatchRunning: false,
+    stopwatchStart: 0,
+    stopwatchRAF: null,
+    awaitingCalibration: false,
+    autoTimerRunning: false,
+    autoTimerId: null,
+    editingIndex: -1
+  };
+
+  const el = {
+    count: document.getElementById('countDisplay'),
+    targetLabel: document.getElementById('targetLabel'),
+    ring: document.getElementById('ringProgress'),
+    counterBtn: document.getElementById('counterBtn'),
+    arabic: document.getElementById('phraseArabic'),
+    translit: document.getElementById('phraseTranslit'),
+    french: document.getElementById('phraseFrench'),
+    phraseChoices: document.getElementById('phraseChoices'),
+    targetChoices: document.getElementById('targetChoices'),
+    micToggle: document.getElementById('micToggle'),
+    resetBtn: document.getElementById('resetBtn'),
+    statusBar: document.getElementById('statusBar'),
+    statusText: document.getElementById('statusText'),
+    heardText: document.getElementById('heardText'),
+    liveRegion: document.getElementById('liveRegion'),
+    supportNote: document.getElementById('supportNote'),
+    envWarning: document.getElementById('envWarning'),
+    addForm: document.getElementById('addForm'),
+    addTranslit: document.getElementById('addTranslit'),
+    addArabic: document.getElementById('addArabic'),
+    addFrench: document.getElementById('addFrench'),
+    formTitle: document.getElementById('formTitle'),
+    saveDhikrBtn: document.getElementById('saveDhikrBtn'),
+    cancelEditBtn: document.getElementById('cancelEditBtn'),
+    pauseToggle: document.getElementById('pauseToggle'),
+    stopwatchDisplay: document.getElementById('stopwatchDisplay'),
+    measureBtn: document.getElementById('measureBtn'),
+    durationMinus: document.getElementById('durationMinus'),
+    durationPlus: document.getElementById('durationPlus'),
+    durationDisplay: document.getElementById('durationDisplay'),
+    autoTimerToggle: document.getElementById('autoTimerToggle'),
+    mainView: document.getElementById('mainView'),
+    manageView: document.getElementById('manageView'),
+    manageList: document.getElementById('manageList'),
+    manageStatus: document.getElementById('manageStatus'),
+    settingsView: document.getElementById('settingsView'),
+    languageSetting: document.getElementById('languageSetting'),
+    vibrationSetting: document.getElementById('vibrationSetting'),
+    arabicSizeSetting: document.getElementById('arabicSizeSetting'),
+    confirmResetSetting: document.getElementById('confirmResetSetting'),
+    quickMic: document.getElementById('quickMic'),
+    quickMicText: document.getElementById('quickMicText'),
+    quickDuration: document.getElementById('quickDuration'),
+    quickPause: document.getElementById('quickPause'),
+    quickPauseText: document.getElementById('quickPauseText')
+  };
+
+
+  const I18N = {
+    fr:{
+      brandSubtitle:'Votre compteur vocal de dhikr.', counterAria:'Compteur de dhikr', navAria:'Navigation principale',
+      navTasbih:'Tasbih', navDhikrs:'Mes dhikrs', navSettings:'Réglages', micPaused:'Micro en pause', micOn:'Micro actif — je vous écoute', micOff:'Micro coupé', micActive:'Micro actif', micEnable:'Activer le micro', micDisable:'Couper le micro',
+      reset:'Réinitialiser', pause:'Mettre en pause', resume:'Reprendre', countingActive:'Comptage actif', countingPaused:'Comptage en pause', micPausedCounting:'Micro actif — en pause, ne compte pas',
+      chooseDhikr:'Choisir le dhikr', target:'Objectif', timerTitle:'Minuteur du dhikr', measureOne:'Mesurer une répétition', stopMeasure:'Arrêter la mesure', durationUnset:'Durée non réglée', durationLabel:'Durée : ', perRepeat:' / répétition', timerStart:'Démarrer le minuteur', timerStop:'Arrêter le minuteur', free:'Libre',
+      myDhikrsTitle:'Mes dhikrs', myDhikrsSubtitle:'Ajoutez, modifiez ou supprimez vos dhikrs personnalisés.', addDhikrTitle:'Ajouter un dhikr', editDhikrTitle:'Modifier le dhikr', addThisDhikr:'Ajouter ce dhikr', saveChanges:'Enregistrer les modifications', cancelEdit:'Annuler la modification', availableDhikrs:'Dhikrs disponibles', edit:'Modifier', delete:'Supprimer',
+      translitPlaceholder:'Translittération (ex. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Traduction (optionnel)',
+      settingsTitle:'Réglages', settingsSubtitle:'Personnalisez l’application selon vos préférences.', themeTitle:'Thème de l’application', themeHint:'Choisissez une ambiance visuelle. Le thème est mémorisé automatiquement.', themeDark:'Sombre', themeBlue:'Bleu', themeGreen:'Vert', themePurple:'Violet', themePink:'Rose', languageTitle:'Langue de l’interface', languageIntro:'Choisissez la langue des boutons, menus et messages de l’application.', languageLabel:'Langue', languageHint:'Le changement est appliqué immédiatement.', speechLanguageNote:'Dhikrs : reconnaissance en arabe. Commandes vocales : dites « Pause », « Reprends » ou « Remets à zéro ». Si Chrome les transcrit mal, les commandes arabes « توقف », « استمر » et « صفر » sont aussi reconnues.', comfortTitle:'Confort et affichage', vibrationLabel:'Vibration au comptage', vibrationHint:'Retour haptique léger sur mobile compatible.', arabicSizeLabel:'Taille du texte arabe', arabicSizeHint:'Ajuste uniquement le dhikr principal.', confirmResetLabel:'Confirmer les remises à zéro', confirmResetHint:'Évite les réinitialisations accidentelles.', dataTitle:'Données', dataText:'Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.',
+      confirmReset:'Remettre le compteur à zéro ?', resetDone:'Compteur de ce dhikr remis à zéro', targetReached:'objectif atteint', heard:'Entendu', notRecognized:'Non reconnu', phraseNotRecognized:'Phrase non reconnue', sayDhikrMeasure:'Dites le dhikr, je mesure le temps', durationSet:'Durée réglée à ', timerStarted:'Minuteur démarré', timerStopped:'Minuteur arrêté',
+      deleteConfirm:n=>'Supprimer « '+n+' » ?', deleted:n=>'« '+n+' » supprimé.', duplicate:'Un dhikr avec cette translittération existe déjà.', modified:n=>'« '+n+' » modifié.', added:n=>'« '+n+' » ajouté à la liste des dhikrs.', invalidTranslit:'Merci d’indiquer une translittération valide.', switched:(n,c)=>'Dhikr changé pour '+n+', compteur '+c,
+      micDenied:'Accès au micro refusé par le navigateur', micDeniedShort:'Accès au micro refusé', micPermission:'Autorisez le microphone pour activer la reconnaissance vocale', micPermissionError:'Impossible d’obtenir l’autorisation du microphone', noMic:'Aucun micro détecté', networkRetry:'Micro actif — problème réseau, nouvelle tentative', micStartError:'Impossible de démarrer le micro', unknownError:'erreur inconnue', safariSpeechUnavailable:'Safari autorise le microphone, mais la reconnaissance vocale Web n’est pas disponible dans ce mode. Essayez d’ouvrir Tasbih+ directement dans Safari.', speechUnsupported:"La reconnaissance vocale n'est pas prise en charge par ce navigateur. Le cercle et les boutons restent utilisables au toucher. Essayez Chrome, Edge ou une version récente de Safari."
+    },
+    it:{
+      brandSubtitle:'Il tuo contatore vocale di dhikr.', counterAria:'Contatore di dhikr', navAria:'Navigazione principale',
+      navTasbih:'Tasbih', navDhikrs:'I miei dhikr', navSettings:'Impostazioni', micPaused:'Microfono in pausa', micOn:'Microfono attivo — ti ascolto', micOff:'Microfono spento', micActive:'Microfono attivo', micEnable:'Attiva microfono', micDisable:'Disattiva microfono',
+      reset:'Azzera', pause:'Metti in pausa', resume:'Riprendi', countingActive:'Conteggio attivo', countingPaused:'Conteggio in pausa', micPausedCounting:'Microfono attivo — in pausa, non conta',
+      chooseDhikr:'Scegli il dhikr', target:'Obiettivo', timerTitle:'Timer del dhikr', measureOne:'Misura una ripetizione', stopMeasure:'Ferma misurazione', durationUnset:'Durata non impostata', durationLabel:'Durata: ', perRepeat:' / ripetizione', timerStart:'Avvia timer', timerStop:'Ferma timer', free:'Libero',
+      myDhikrsTitle:'I miei dhikr', myDhikrsSubtitle:'Aggiungi, modifica o elimina i tuoi dhikr personalizzati.', addDhikrTitle:'Aggiungi un dhikr', editDhikrTitle:'Modifica il dhikr', addThisDhikr:'Aggiungi questo dhikr', saveChanges:'Salva modifiche', cancelEdit:'Annulla modifica', availableDhikrs:'Dhikr disponibili', edit:'Modifica', delete:'Elimina',
+      translitPlaceholder:'Traslitterazione (es. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Traduzione (opzionale)',
+      settingsTitle:'Impostazioni', themeTitle:'Tema dell’app', themeHint:'Scegli l’aspetto dell’app. Il tema viene salvato automaticamente.', themeDark:'Scuro', themeBlue:'Blu', themeGreen:'Verde', themePurple:'Viola', themePink:'Rosa', settingsSubtitle:'Personalizza l’app secondo le tue preferenze.', languageTitle:'Lingua dell’interfaccia', languageIntro:'Scegli la lingua di pulsanti, menu e messaggi dell’app.', languageLabel:'Lingua', languageHint:'La modifica viene applicata immediatamente.', speechLanguageNote:'Dhikr: riconoscimento in arabo. Comandi vocali: dì « Pausa », « Riprendi » o « Azzera ». Se Chrome li trascrive male, funzionano anche « توقف », « استمر » e « صفر ».', comfortTitle:'Comfort e visualizzazione', vibrationLabel:'Vibrazione al conteggio', vibrationHint:'Leggero feedback aptico sui dispositivi compatibili.', arabicSizeLabel:'Dimensione del testo arabo', arabicSizeHint:'Regola solo il dhikr principale.', confirmResetLabel:'Conferma azzeramento', confirmResetHint:'Evita azzeramenti accidentali.', dataTitle:'Dati', dataText:'Dhikr personalizzati, contatori e impostazioni vengono salvati localmente nel browser.',
+      confirmReset:'Azzerare il contatore?', resetDone:'Contatore di questo dhikr azzerato', targetReached:'obiettivo raggiunto', heard:'Riconosciuto', notRecognized:'Non riconosciuto', phraseNotRecognized:'Frase non riconosciuta', sayDhikrMeasure:'Recita il dhikr, misuro il tempo', durationSet:'Durata impostata a ', timerStarted:'Timer avviato', timerStopped:'Timer fermato',
+      deleteConfirm:n=>'Eliminare « '+n+' »?', deleted:n=>'« '+n+' » eliminato.', duplicate:'Esiste già un dhikr con questa traslitterazione.', modified:n=>'« '+n+' » modificato.', added:n=>'« '+n+' » aggiunto alla lista dei dhikr.', invalidTranslit:'Inserisci una traslitterazione valida.', switched:(n,c)=>'Dhikr cambiato in '+n+', contatore '+c,
+      micDenied:'Accesso al microfono negato dal browser', micDeniedShort:'Accesso al microfono negato', micPermission:'Autorizza il microfono per attivare il riconoscimento vocale', micPermissionError:'Impossibile ottenere il permesso del microfono', noMic:'Nessun microfono rilevato', networkRetry:'Microfono attivo — problema di rete, nuovo tentativo', micStartError:'Impossibile avviare il microfono', unknownError:'errore sconosciuto', safariSpeechUnavailable:'Safari autorizza il microfono, ma il riconoscimento vocale Web non è disponibile in questa modalità. Prova ad aprire Tasbih+ direttamente in Safari.', speechUnsupported:'Il riconoscimento vocale non è supportato da questo browser. Il contatore e i pulsanti restano utilizzabili al tocco. Prova Chrome, Edge o una versione recente di Safari.'
+    },
+    en:{
+      brandSubtitle:'Your voice dhikr counter.', counterAria:'Dhikr counter', navAria:'Main navigation',
+      navTasbih:'Tasbih', navDhikrs:'My dhikrs', navSettings:'Settings', micPaused:'Microphone paused', micOn:'Microphone active — listening', micOff:'Microphone off', micActive:'Microphone active', micEnable:'Enable microphone', micDisable:'Turn off microphone',
+      reset:'Reset', pause:'Pause', resume:'Resume', countingActive:'Counting active', countingPaused:'Counting paused', micPausedCounting:'Microphone active — paused, not counting',
+      chooseDhikr:'Choose dhikr', target:'Target', timerTitle:'Dhikr timer', measureOne:'Measure one repetition', stopMeasure:'Stop measurement', durationUnset:'Duration not set', durationLabel:'Duration: ', perRepeat:' / repetition', timerStart:'Start timer', timerStop:'Stop timer', free:'Free',
+      myDhikrsTitle:'My dhikrs', myDhikrsSubtitle:'Add, edit or delete your custom dhikrs.', addDhikrTitle:'Add a dhikr', editDhikrTitle:'Edit dhikr', addThisDhikr:'Add this dhikr', saveChanges:'Save changes', cancelEdit:'Cancel edit', availableDhikrs:'Available dhikrs', edit:'Edit', delete:'Delete',
+      translitPlaceholder:'Transliteration (e.g. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Translation (optional)',
+      settingsTitle:'Settings', themeTitle:'App theme', themeHint:'Choose the app appearance. Your theme is saved automatically.', themeDark:'Dark', themeBlue:'Blue', themeGreen:'Green', themePurple:'Purple', themePink:'Pink', settingsSubtitle:'Personalize the app to your preferences.', languageTitle:'Interface language', languageIntro:'Choose the language used for buttons, menus and app messages.', languageLabel:'Language', languageHint:'The change is applied immediately.', speechLanguageNote:'Dhikrs are recognized in Arabic. Voice commands also support English, with Arabic fallback commands « توقف », « استمر » and « صفر ».', comfortTitle:'Comfort and display', vibrationLabel:'Vibrate when counting', vibrationHint:'Light haptic feedback on compatible mobile devices.', arabicSizeLabel:'Arabic text size', arabicSizeHint:'Adjusts only the main dhikr text.', confirmResetLabel:'Confirm resets', confirmResetHint:'Prevents accidental resets.', dataTitle:'Data', dataText:'Custom dhikrs, counters and settings are saved locally in your browser.',
+      confirmReset:'Reset the counter to zero?', resetDone:'This dhikr counter was reset', targetReached:'target reached', heard:'Heard', notRecognized:'Not recognized', phraseNotRecognized:'Phrase not recognized', sayDhikrMeasure:'Say the dhikr, I am measuring the time', durationSet:'Duration set to ', timerStarted:'Timer started', timerStopped:'Timer stopped',
+      deleteConfirm:n=>'Delete “'+n+'”?', deleted:n=>'“'+n+'” deleted.', duplicate:'A dhikr with this transliteration already exists.', modified:n=>'“'+n+'” updated.', added:n=>'“'+n+'” added to the dhikr list.', invalidTranslit:'Please enter a valid transliteration.', switched:(n,c)=>'Dhikr changed to '+n+', counter '+c,
+      micDenied:'Microphone access denied by the browser', micDeniedShort:'Microphone access denied', micPermission:'Allow microphone access to enable voice recognition', micPermissionError:'Unable to obtain microphone permission', noMic:'No microphone detected', networkRetry:'Microphone active — network problem, retrying', micStartError:'Unable to start the microphone', unknownError:'unknown error', safariSpeechUnavailable:'Safari allows microphone access, but Web Speech recognition is not available in this mode. Try opening Tasbih+ directly in Safari.', speechUnsupported:'Voice recognition is not supported by this browser. The counter and buttons can still be used by touch. Try Chrome, Edge, or a recent version of Safari.'
+    }
+  };
+
+  function t(key, ...args){
+    const lang = (appSettings && appSettings.language) || 'fr';
+    const value = (I18N[lang] && I18N[lang][key]) ?? I18N.fr[key] ?? key;
+    return typeof value === 'function' ? value(...args) : value;
+  }
+
+  function applyLanguage(){
+    const lang = appSettings.language || 'fr';
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(node => {
+      const key=node.dataset.i18n; if(I18N[lang]?.[key] !== undefined) node.textContent=t(key);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(node => { node.placeholder=t(node.dataset.i18nPlaceholder); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label',t(node.dataset.i18nAria)); });
+    if(el.languageSetting) el.languageSetting.value=lang;
+    renderPhraseChoices();
+    renderTargetChoices();
+    updateTimerPanel();
+    updateDisplay();
+    setPausedUI(state.paused);
+    setListeningUI(state.listening);
+    if(state.editingIndex >= BUILTIN_COUNT){
+      el.formTitle.textContent=t('editDhikrTitle'); el.saveDhikrBtn.textContent=t('saveChanges');
+    }
+  }
+
+
+  let appSettings = { vibration:true, arabicSize:40, confirmReset:true, language:'fr', theme:'blue' };
+
+  function showView(viewId){
+    ['mainView','manageView','settingsView'].forEach(id => {
+      const node = document.getElementById(id);
+      if(node) node.hidden = id !== viewId;
+    });
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      if(btn.dataset.view === viewId) btn.setAttribute('aria-current','page');
+      else btn.removeAttribute('aria-current');
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
+
+  function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }catch(e){} }
+  function applySettings(){
+    el.vibrationSetting.checked = !!appSettings.vibration;
+    el.arabicSizeSetting.value = appSettings.arabicSize;
+    el.confirmResetSetting.checked = !!appSettings.confirmReset;
+    if(el.languageSetting) el.languageSetting.value = appSettings.language || 'fr';
+    applyTheme(appSettings.theme || 'blue');
+    document.documentElement.style.setProperty('--arabic-main-size', appSettings.arabicSize + 'px');
+    el.arabic.style.fontSize = appSettings.arabicSize + 'px';
+  }
+  function loadSettings(){
+    try{ const raw=localStorage.getItem(SETTINGS_KEY); if(raw) appSettings={...appSettings,...JSON.parse(raw)}; }catch(e){}
+    appSettings.arabicSize=Math.max(26,Math.min(56,Number(appSettings.arabicSize)||40));
+    if(!['fr','it','en'].includes(appSettings.language)) appSettings.language='fr';
+    if(!['dark','blue','green','purple','pink'].includes(appSettings.theme)) appSettings.theme='blue';
+    applySettings(); applyLanguage();
+  }
+  function applyTheme(theme){
+    const valid=['dark','blue','green','purple','pink'];
+    const chosen=valid.includes(theme) ? theme : 'blue';
+    document.documentElement.dataset.theme=chosen;
+    document.querySelectorAll('.theme-choice').forEach(btn=>btn.setAttribute('aria-pressed', btn.dataset.theme===chosen ? 'true' : 'false'));
+  }
+  document.querySelectorAll('.theme-choice').forEach(btn=>btn.addEventListener('click',()=>{ appSettings.theme=btn.dataset.theme; applyTheme(appSettings.theme); saveSettings(); }));
+  el.languageSetting.addEventListener('change',()=>{ appSettings.language=el.languageSetting.value; saveSettings(); applyLanguage(); });
+  el.vibrationSetting.addEventListener('change',()=>{ appSettings.vibration=el.vibrationSetting.checked; saveSettings(); });
+  el.arabicSizeSetting.addEventListener('input',()=>{ appSettings.arabicSize=Number(el.arabicSizeSetting.value); applySettings(); saveSettings(); });
+  el.confirmResetSetting.addEventListener('change',()=>{ appSettings.confirmReset=el.confirmResetSetting.checked; saveSettings(); });
+
+  function targetText(v){ return v === 0 ? t('free').toLowerCase() : (t('target').toLowerCase() + ' ' + v); }
+
+  function renderPhraseChoices(){
+    el.phraseChoices.innerHTML = '';
+    el.manageList.innerHTML = '';
+    phrases.forEach((p, i) => {
+      const label = p.translit;
+
+      const selectBtn = document.createElement('button');
+      selectBtn.className = 'choice-btn';
+      selectBtn.type = 'button';
+      selectBtn.textContent = label;
+      selectBtn.setAttribute('aria-pressed', i === state.phraseIndex ? 'true' : 'false');
+      if(i >= BUILTIN_COUNT) selectBtn.classList.add('saved-dhikr');
+      selectBtn.addEventListener('click', () => setPhrase(i, true));
+      el.phraseChoices.appendChild(selectBtn);
+
+      const card = document.createElement('div');
+      card.className = 'manage-card';
+      const pick = selectBtn.cloneNode(true);
+      pick.addEventListener('click', () => setPhrase(i, true));
+      card.appendChild(pick);
+
+      if(p.ar){
+        const ar = document.createElement('div');
+        ar.dir = 'rtl'; ar.lang = 'ar'; ar.style.textAlign = 'center'; ar.style.fontSize = '1.25rem';
+        ar.textContent = p.ar;
+        card.appendChild(ar);
+      }
+
+      if(i >= BUILTIN_COUNT){
+        const actions = document.createElement('div');
+        actions.className = 'manage-actions';
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button'; editBtn.className = 'choice-btn'; editBtn.textContent = t('edit');
+        editBtn.addEventListener('click', () => beginEditPhrase(i));
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button'; deleteBtn.className = 'choice-btn'; deleteBtn.textContent = t('delete');
+        deleteBtn.addEventListener('click', () => deleteCustomPhrase(i));
+        actions.append(editBtn, deleteBtn);
+        card.appendChild(actions);
+      }
+      el.manageList.appendChild(card);
+    });
+  }
+
+  function renderTargetChoices(){
+    el.targetChoices.innerHTML = '';
+    targets.forEach(targetValue => {
+      const b = document.createElement('button');
+      b.className = 'choice-btn';
+      b.type = 'button';
+      b.textContent = targetValue === 0 ? t('free') : String(targetValue);
+      b.setAttribute('aria-pressed', targetValue === state.target ? 'true' : 'false');
+      b.addEventListener('click', () => setTarget(targetValue, true));
+      el.targetChoices.appendChild(b);
+    });
+  }
+
+  const PHRASE_COUNTS_KEY = 'dhikrs-counts-by-key';
+
+  function loadPhraseCounts(){
+    try{
+      const saved = localStorage.getItem(PHRASE_COUNTS_KEY);
+      const parsed = saved ? JSON.parse(saved) : {};
+      if(parsed && typeof parsed === 'object' && !Array.isArray(parsed)){
+        state.phraseCounts = parsed;
+      }
+    }catch(e){
+      state.phraseCounts = {};
+    }
+  }
+
+  function savePhraseCounts(){
+    try{
+      localStorage.setItem(PHRASE_COUNTS_KEY, JSON.stringify(state.phraseCounts));
+    }catch(e){ /* stockage local indisponible */ }
+  }
+
+  function getPhraseCount(key){
+    const value = Number(state.phraseCounts[key]);
+    return Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+  }
+
+  function storeCurrentPhraseCount(){
+    const p = phrases[state.phraseIndex];
+    if(!p) return;
+    state.phraseCounts[p.key] = state.count;
+    savePhraseCounts();
+  }
+
+  function updateRing(){
+    if(state.target === 0){
+      el.ring.style.strokeDashoffset = 0;
+      return;
+    }
+    const ratio = Math.min(state.count / state.target, 1);
+    el.ring.setAttribute('stroke-dasharray', CIRCUMFERENCE.toFixed(1));
+    el.ring.style.strokeDashoffset = (CIRCUMFERENCE * (1 - ratio)).toFixed(1);
+  }
+
+  function updateDisplay(){
+    el.count.textContent = state.count;
+    el.targetLabel.textContent = state.target ? (state.count + ' / ' + state.target) : (state.count + ' · ' + t('free'));
+    el.counterBtn.setAttribute('aria-label', t('counterAria') + ' : ' + state.count + (state.target ? ' / ' + state.target : ''));
+    updateRing();
+  }
+
+  function announce(text){
+    el.liveRegion.textContent = text;
+  }
+
+  function speak(){ /* voix désactivée : retour visuel uniquement */ }
+
+  function setPhrase(i, announceSwitch){
+    if(i < 0 || i >= phrases.length) return;
+    if(state.phraseReady && phrases[state.phraseIndex]) storeCurrentPhraseCount();
+    state.phraseIndex = i;
+    const p = phrases[i];
+    state.count = getPhraseCount(p.key);
+    state.phraseReady = true;
+    el.arabic.textContent = p.ar || '';
+    el.arabic.dir = 'rtl';
+    el.arabic.lang = 'ar';
+    el.translit.textContent = p.translit;
+    const builtinMeaning = {
+      subhanallah:{fr:'Gloire à Dieu',it:'Gloria a Dio',en:'Glory be to God'},
+      alhamdulillah:{fr:'Louange à Dieu',it:'Lode a Dio',en:'Praise be to God'},
+      allahuakbar:{fr:'Dieu est grand',it:'Dio è il più grande',en:'God is the Greatest'},
+      astaghfirullah:{fr:'Je demande pardon à Dieu',it:'Chiedo perdono a Dio',en:'I seek forgiveness from God'}
+    };
+    el.french.textContent = builtinMeaning[p.key]?.[appSettings.language || 'fr'] || p.fr || '';
+    renderPhraseChoices();
+    cancelStopwatch();
+    stopAutoTimer();
+    updateTimerPanel();
+    updateDisplay();
+    if(announceSwitch) announce(t('switched', p.translit, state.count));
+  }
+
+  function setTarget(t){
+    state.target = t;
+    renderTargetChoices();
+    updateDisplay();
+  }
+
+  function increment(){
+    state.count += 1;
+    const p = phrases[state.phraseIndex];
+    if(p) state.phraseCounts[p.key] = state.count;
+    savePhraseCounts();
+    updateDisplay();
+    if(appSettings.vibration && navigator.vibrate) navigator.vibrate(16);
+    if(state.target && state.count === state.target){
+      announce(state.count + ', ' + t('targetReached'));
+    } else {
+      announce(String(state.count));
+    }
+  }
+
+  function reset(){
+    if(appSettings.confirmReset && state.count > 0 && !confirm(t('confirmReset'))) return;
+    state.count = 0;
+    const p = phrases[state.phraseIndex];
+    if(p) state.phraseCounts[p.key] = 0;
+    savePhraseCounts();
+    updateDisplay();
+    announce(t('resetDone'));
+  }
+
+  function setPausedUI(on){
+    state.paused = on;
+    el.statusBar.classList.toggle('paused', on);
+    el.pauseToggle.textContent = on ? t('resume') : t('pause');
+    el.pauseToggle.dataset.active = on ? 'true' : 'false';
+    if(el.quickPause){
+      el.quickPause.classList.toggle('paused', on);
+      el.quickPauseText.textContent = on ? t('countingPaused') : t('countingActive');
+    }
+    if(state.listening){
+      el.statusText.textContent = on
+        ? t('micPausedCounting')
+        : t('micOn');
+    }
+  }
+
+  function pauseCounting(){
+    if(state.paused) return;
+    setPausedUI(true);
+    announce(t('countingPaused'));
+  }
+
+  function resumeCounting(){
+    if(!state.paused) return;
+    setPausedUI(false);
+    announce(t('resume'));
+  }
+
+  function makePhraseKey(translit){
+    return normalize(translit).replace(/\s+/g, '-');
+  }
+
+  function addCustomPhrase(rawName, frenchTranslation, arabicText){
+    const translit = rawName.trim().replace(/\s+/g, ' ');
+    if(!translit) return -1;
+    const pattern = normalize(translit);
+    if(!pattern) return -1;
+
+    const existing = phrases.findIndex(p => p.patterns.includes(pattern));
+    if(existing !== -1){
+      setPhrase(existing, true);
+      return existing;
+    }
+
+    const label = translit.charAt(0).toUpperCase() + translit.slice(1);
+    phrases.push({
+      key: makePhraseKey(translit),
+      ar: arabicText ? arabicText.trim() : '',
+      translit: label,
+      fr: frenchTranslation ? frenchTranslation.trim() : '',
+      patterns: [pattern],
+      duration: null
+    });
+    const newIndex = phrases.length - 1;
+    setPhrase(newIndex, true);
+    saveCustomPhrases();
+    return newIndex;
+  }
+
+  function beginEditPhrase(i){
+    if(i < BUILTIN_COUNT) return;
+    const p = phrases[i];
+    state.editingIndex = i;
+    el.addTranslit.value = p.translit;
+    el.addArabic.value = p.ar || '';
+    el.addFrench.value = p.fr || '';
+    el.formTitle.textContent = t('editDhikrTitle');
+    el.saveDhikrBtn.textContent = t('saveChanges');
+    el.cancelEditBtn.hidden = false;
+    el.addTranslit.focus();
+  }
+
+  function cancelEdit(){
+    state.editingIndex = -1;
+    el.addForm.reset();
+    el.formTitle.textContent = t('addDhikrTitle');
+    el.saveDhikrBtn.textContent = t('addThisDhikr');
+    el.cancelEditBtn.hidden = true;
+  }
+
+  function updateCustomPhrase(i, rawName, frenchTranslation, arabicText){
+    if(i < BUILTIN_COUNT || !phrases[i]) return -1;
+    const translit = rawName.trim().replace(/\s+/g, ' ');
+    const pattern = normalize(translit);
+    if(!translit || !pattern) return -1;
+    const duplicate = phrases.findIndex((p, idx) => idx !== i && p.patterns.includes(pattern));
+    if(duplicate !== -1) return -2;
+    const oldKey = phrases[i].key;
+    const newKey = makePhraseKey(translit);
+    phrases[i] = {
+      ...phrases[i],
+      key: newKey,
+      translit: translit.charAt(0).toUpperCase() + translit.slice(1),
+      ar: arabicText ? arabicText.trim() : '',
+      fr: frenchTranslation ? frenchTranslation.trim() : '',
+      patterns: [pattern]
+    };
+    if(oldKey !== newKey){
+      state.phraseCounts[newKey] = getPhraseCount(oldKey);
+      delete state.phraseCounts[oldKey];
+      savePhraseCounts();
+    }
+    saveCustomPhrases();
+    setPhrase(i, false);
+    return i;
+  }
+
+  function deleteCustomPhrase(i){
+    if(i < BUILTIN_COUNT || !phrases[i]) return;
+    const name = phrases[i].translit;
+    const deletedKey = phrases[i].key;
+    if(!confirm(t('deleteConfirm', name))) return;
+    delete state.phraseCounts[deletedKey];
+    savePhraseCounts();
+    phrases.splice(i, 1);
+    if(state.phraseIndex === i){
+      state.phraseIndex = 0;
+      state.phraseReady = false;
+      setPhrase(0, false);
+    } else if(state.phraseIndex > i){
+      state.phraseIndex -= 1;
+    }
+    if(state.editingIndex === i) cancelEdit();
+    else if(state.editingIndex > i) state.editingIndex -= 1;
+    saveCustomPhrases();
+    renderPhraseChoices();
+    showManageStatus(t('deleted', name));
+  }
+
+  // ---- Persist custom dhikrs across sessions (when available) ----
+  const CUSTOM_DHIKR_KEY = 'dhikrs-custom-list';
+  const BUILTIN_COUNT = phrases.length;
+
+  function getCustomPhrasesData(){
+    return phrases.slice(BUILTIN_COUNT).map(p => ({
+      key: p.key, ar: p.ar || '', translit: p.translit, fr: p.fr, patterns: p.patterns, duration: p.duration || null
+    }));
+  }
+
+  async function saveCustomPhrases(){
+    const data = JSON.stringify(getCustomPhrasesData());
+
+    if(window.storage){
+      try{
+        await window.storage.set(CUSTOM_DHIKR_KEY, data, false);
+      }catch(e){ /* fallback localStorage */ }
+    }
+
+    try{
+      localStorage.setItem(CUSTOM_DHIKR_KEY, data);
+    }catch(e){ /* stockage local indisponible */ }
+  }
+
+  async function loadCustomPhrases(){
+    let loaded = false;
+
+    if(window.storage){
+      try{
+        const result = await window.storage.get(CUSTOM_DHIKR_KEY, false);
+        if(result && result.value){
+          importPhrasesFromJSON(result.value);
+          loaded = true;
+        }
+      }catch(e){ /* on tente localStorage */ }
+    }
+
+    if(!loaded){
+      try{
+        const saved = localStorage.getItem(CUSTOM_DHIKR_KEY);
+        if(saved) importPhrasesFromJSON(saved);
+      }catch(e){ /* aucun dhikr enregistré */ }
+    }
+
+    // Rafraîchit les listes après chargement : les dhikrs enregistrés
+    // sont donc visibles immédiatement dans la liste existante.
+    renderPhraseChoices();
+    updateTimerPanel();
+  }
+
+  function importPhrasesFromJSON(jsonText){
+    const list = JSON.parse(jsonText);
+    if(!Array.isArray(list)) throw new Error('invalid');
+    list.forEach(item => {
+      if(item && item.translit && Array.isArray(item.patterns) &&
+         !phrases.some(p => p.key === item.key)){
+        phrases.push({ key:item.key, ar:item.ar || '', translit:item.translit, fr:item.fr || '', patterns:item.patterns, duration:item.duration || null });
+      }
+    });
+    renderPhraseChoices();
+  }
+
+  function showManageStatus(text){
+    el.manageStatus.textContent = text;
+    announce(text);
+  }
+
+  // ---- Timer: measure a repetition, then optionally auto-count at that pace ----
+  function formatSeconds(s){
+    return s.toFixed(1).replace('.', ',') + ' s';
+  }
+
+  function updateTimerPanel(){
+    const p = phrases[state.phraseIndex];
+    if(p.duration){
+      el.durationDisplay.textContent = t('durationLabel') + formatSeconds(p.duration);
+      if(el.quickDuration) el.quickDuration.textContent = formatSeconds(p.duration) + t('perRepeat');
+      el.autoTimerToggle.disabled = false;
+    } else {
+      el.durationDisplay.textContent = t('durationUnset');
+      if(el.quickDuration) el.quickDuration.textContent = t('durationUnset');
+      el.autoTimerToggle.disabled = true;
+    }
+  }
+
+  function tickStopwatch(){
+    if(!state.stopwatchRunning) return;
+    const elapsed = (performance.now() - state.stopwatchStart) / 1000;
+    el.stopwatchDisplay.textContent = formatSeconds(elapsed);
+    state.stopwatchRAF = requestAnimationFrame(tickStopwatch);
+  }
+
+  function startStopwatch(){
+    if(state.stopwatchRunning) return;
+    state.stopwatchRunning = true;
+    state.stopwatchStart = performance.now();
+    el.measureBtn.textContent = t('stopMeasure');
+    tickStopwatch();
+  }
+
+  function stopStopwatch(){
+    if(!state.stopwatchRunning) return;
+    state.stopwatchRunning = false;
+    state.awaitingCalibration = false;
+    if(state.stopwatchRAF) cancelAnimationFrame(state.stopwatchRAF);
+    const elapsed = (performance.now() - state.stopwatchStart) / 1000;
+    const rounded = Math.max(0.3, Math.round(elapsed * 10) / 10);
+    phrases[state.phraseIndex].duration = rounded;
+    el.stopwatchDisplay.textContent = formatSeconds(rounded);
+    el.measureBtn.textContent = t('measureOne');
+    updateTimerPanel();
+    saveCustomPhrases();
+    announce(t('durationSet') + formatSeconds(rounded));
+  }
+
+  function cancelStopwatch(){
+    if(!state.stopwatchRunning) return;
+    state.stopwatchRunning = false;
+    state.awaitingCalibration = false;
+    if(state.stopwatchRAF) cancelAnimationFrame(state.stopwatchRAF);
+    el.stopwatchDisplay.textContent = '0,0 s';
+    el.measureBtn.textContent = t('measureOne');
+  }
+
+  function adjustDuration(delta){
+    const p = phrases[state.phraseIndex];
+    const base = p.duration || 1.0;
+    p.duration = Math.max(0.2, Math.round((base + delta) * 10) / 10);
+    updateTimerPanel();
+    saveCustomPhrases();
+  }
+
+  function startAutoTimer(){
+    const p = phrases[state.phraseIndex];
+    if(!p.duration || state.autoTimerRunning) return;
+    state.autoTimerRunning = true;
+    el.autoTimerToggle.textContent = t('timerStop');
+    el.autoTimerToggle.dataset.active = 'true';
+    announce(t('timerStarted'));
+    state.autoTimerId = setInterval(() => {
+      increment();
+      if(state.target && state.count >= state.target){
+        stopAutoTimer();
+      }
+    }, p.duration * 1000);
+  }
+
+  function stopAutoTimer(){
+    if(state.autoTimerId) clearInterval(state.autoTimerId);
+    state.autoTimerId = null;
+    if(state.autoTimerRunning) announce(t('timerStopped'));
+    state.autoTimerRunning = false;
+    el.autoTimerToggle.textContent = t('timerStart');
+    el.autoTimerToggle.dataset.active = 'false';
+  }
+
+  el.measureBtn.addEventListener('click', () => {
+    if(state.stopwatchRunning) stopStopwatch(); else startStopwatch();
+  });
+  el.durationMinus.addEventListener('click', () => adjustDuration(-0.1));
+  el.durationPlus.addEventListener('click', () => adjustDuration(0.1));
+  el.autoTimerToggle.addEventListener('click', () => {
+    if(state.autoTimerRunning) stopAutoTimer(); else startAutoTimer();
+  });
+
+  function checkEnvironment(){
+    const inIframe = window.self !== window.top;
+    const insecure = !window.isSecureContext;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if(inIframe || insecure){
+      el.envWarning.hidden = false;
+      el.envWarning.innerHTML = inIframe
+        ? '<b>Micro indisponible dans cet aperçu.</b> Téléchargez ce fichier puis ouvrez-le directement dans votre navigateur (double-clic, ou glisser-déposer dans Chrome) pour que la commande vocale fonctionne.'
+        : '<b>Connexion non sécurisée.</b> Ouvrez ce fichier via https:// ou en local (double-clic) : le micro est bloqué sur les pages http:// simples.';
+      return;
+    }
+
+    if(isIOS && !(window.SpeechRecognition || window.webkitSpeechRecognition)){
+      el.envWarning.hidden = false;
+      el.envWarning.innerHTML = '<b>La commande vocale n\u2019est pas prise en charge sur cet iPhone.</b> Le cercle et les boutons restent utilisables au toucher. Si Tasbih+ est installé sur l’écran d’accueil, essayez aussi de l’ouvrir directement dans Safari.';
+    }
+  }
+  checkEnvironment();
+
+  el.counterBtn.addEventListener('click', increment);
+  el.resetBtn.addEventListener('click', reset);
+
+  el.addForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = el.addTranslit.value.trim();
+    const arabic = el.addArabic.value.trim();
+    const french = el.addFrench.value.trim();
+
+    if(state.editingIndex >= BUILTIN_COUNT){
+      const idx = updateCustomPhrase(state.editingIndex, name, french, arabic);
+      if(idx === -2){
+        showManageStatus(t('duplicate'));
+        return;
+      }
+      if(idx >= 0){
+        const savedName = phrases[idx].translit;
+        cancelEdit();
+        renderPhraseChoices();
+        showManageStatus(t('modified', savedName));
+      } else {
+        showManageStatus(t('invalidTranslit'));
+      }
+      return;
+    }
+
+    const idx = addCustomPhrase(name, french, arabic);
+    if(idx !== -1){
+      const savedName = phrases[idx].translit;
+      cancelEdit();
+      showManageStatus(t('added', savedName));
+    } else {
+      showManageStatus(t('invalidTranslit'));
+    }
+  });
+
+  el.cancelEditBtn.addEventListener('click', cancelEdit);
+
+  el.pauseToggle.addEventListener('click', () => {
+    if(state.paused) resumeCounting(); else pauseCounting();
+  });
+
+  // ---- Speech recognition : Chrome / Edge / Safari ----
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const ua = navigator.userAgent || '';
+  const isAppleMobile = /iPad|iPhone|iPod/.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = /^((?!chrome|chromium|crios|edg|opr|android).)*safari/i.test(ua) || isAppleMobile;
+  const isStandalonePWA = window.matchMedia?.('(display-mode: standalone)').matches ||
+    navigator.standalone === true;
+
+  let recognition = null;
+  let shouldListen = false;
+  let recognitionStarting = false;
+  let restartTimer = null;
+
+  async function ensureMicrophonePermission(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;
+    el.statusText.textContent = t('micPermission');
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    }catch(err){
+      shouldListen = false;
+      setListeningUI(false);
+      if(err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')){
+        el.statusText.textContent = t('micDenied');
+        announce(t('micDeniedShort'));
+      }else if(err && (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError')){
+        el.statusText.textContent = t('noMic');
+      }else{
+        el.statusText.textContent = t('micPermissionError');
+      }
+      return false;
+    }
+  }
+
+  function setListeningUI(on){
+    state.listening = on;
+    el.statusBar.classList.toggle('on', on);
+    el.statusText.textContent = on ? t('micOn') : t('micPaused');
+    el.micToggle.textContent = on ? t('micDisable') : t('micEnable');
+    el.micToggle.dataset.active = on ? 'true' : 'false';
+    if(!on && el.heardText) el.heardText.textContent = '';
+    if(el.quickMic){
+      el.quickMic.classList.toggle('on', on);
+      el.quickMicText.textContent = on ? t('micActive') : t('micOff');
+    }
+  }
+
+  function normalizeArabicCommand(s){
+    return String(s || '')
+      .toLowerCase()
+      .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+      .replace(/[أإآٱ]/g, 'ا')
+      .replace(/ى/g, 'ي')
+      .replace(/ؤ/g, 'و')
+      .replace(/ئ/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/[^\u0600-\u06FFa-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function getVoiceCommand(raw){
+    const latin = normalize(raw);
+    const ar = normalizeArabicCommand(raw);
+    const lang = (appSettings.language || 'fr');
+
+    // Arabic fallbacks are intentionally accepted in every interface language.
+    // They are useful because the dhikr recognizer itself listens in Arabic (ar-SA).
+    if(/^(توقف|قف|وقف|بوز|باوز)$/.test(ar)) return 'pause';
+    if(/^(استمر|كمل|اكمل|واصل|تابع|ريزوم)$/.test(ar)) return 'resume';
+    if(/^(صفر|تصفير|اعاده الضبط|اعادة الضبط|ريسيت|ريست)$/.test(ar)) return 'reset';
+
+    if(lang === 'fr'){
+      if(/^(pause|mets? en pause|met le compte en pause|arrete de compter|stoppe le compte|stop compte)$/.test(latin)) return 'pause';
+      if(/^(reprends?|reprendre|continue|continue le compte|reactive le compte|recommence a compter)$/.test(latin)) return 'resume';
+      if(/^(reinitialise|reinitialiser|remets? a zero|remet le compteur a zero|zero|recommence le compteur)$/.test(latin)) return 'reset';
+      if(/^(بوز|بوس|روبران|روبراند|ريانيتياليز|رينيتياليز)$/.test(ar)){
+        if(/بوز|بوس/.test(ar)) return 'pause';
+        if(/روبران|روبراند/.test(ar)) return 'resume';
+        return 'reset';
+      }
+    } else if(lang === 'it'){
+      if(/^(pausa|metti in pausa|ferma il conteggio|stop conteggio)$/.test(latin)) return 'pause';
+      if(/^(riprendi|continua|continua il conteggio|ricomincia a contare)$/.test(latin)) return 'resume';
+      if(/^(azzera|reset|reimposta|porta a zero|azzera il contatore)$/.test(latin)) return 'reset';
+      if(/^(باوزا|باوسا|ريبريندي|ريب्रيندي|ازيرا|اتزيرا)$/.test(ar)){
+        if(/باوزا|باوسا/.test(ar)) return 'pause';
+        if(/ريبريندي|ريب्रيندي/.test(ar)) return 'resume';
+        return 'reset';
+      }
+    } else {
+      if(/^(pause|pause counting|stop counting|stop the count)$/.test(latin)) return 'pause';
+      if(/^(resume|resume counting|continue|continue counting|start counting again)$/.test(latin)) return 'resume';
+      if(/^(reset|reset counter|reset the counter|zero|set to zero)$/.test(latin)) return 'reset';
+      if(/^(بوز|باوز|ريزوم|ريسيت|ريست)$/.test(ar)){
+        if(/بوز|باوز/.test(ar)) return 'pause';
+        if(/ريزوم/.test(ar)) return 'resume';
+        return 'reset';
+      }
+    }
+    return null;
+  }
+
+  function handleTranscript(raw){
+    const norm = normalize(raw);
+    if(el.heardText) el.heardText.textContent = raw.trim() ? (t('heard') + ' : « ' + raw.trim() + ' »') : '';
+    if(!norm || norm.length < 2) return;
+
+    // Voice commands are checked before dhikr matching. Commands follow the
+    // interface language, with Arabic/phonetic fallbacks because the recognizer
+    // remains in ar-SA for accurate dhikr transcription.
+    const voiceCommand = getVoiceCommand(raw);
+    if(voiceCommand === 'pause'){
+      pauseCounting();
+      return;
+    }
+    if(voiceCommand === 'resume'){
+      resumeCounting();
+      return;
+    }
+    if(voiceCommand === 'reset'){
+      reset();
+      return;
+    }
+
+    // While paused, ignore everything except a recognized resume/reset command.
+    if(state.paused) return;
+
+    // If a calibration measurement is running, the very next thing said
+    // is the dhikr being timed — stop the stopwatch on it, whatever it is,
+    // and don't treat it as a command or a normal count.
+    if(state.awaitingCalibration){
+      stopStopwatch();
+      return;
+    }
+
+    if(/^mesure$|mesure le temps|chronometre/.test(norm)){
+      state.awaitingCalibration = true;
+      startStopwatch();
+      announce(t('sayDhikrMeasure'));
+      return;
+    }
+    if(/^minuteur$|lance le minuteur|demarre le minuteur/.test(norm)){
+      startAutoTimer();
+      return;
+    }
+    if(/arrete le minuteur|stop minuteur/.test(norm)){
+      stopAutoTimer();
+      return;
+    }
+
+    // "ajoute un dhikr <nom>" / "nouveau dhikr <nom>" — checked first,
+    // since the added name itself could otherwise be treated as a dhikr said aloud.
+    const addMatch = norm.match(/^(?:ajoute(?:r)? (?:un )?dhikr|nouveau dhikr)\s+(.+)/);
+    if(addMatch && addMatch[1]){
+      addCustomPhrase(addMatch[1]);
+      return;
+    }
+
+    if(/objectif/.test(norm)){
+      if(/libre/.test(norm)){ setTarget(0); return; }
+      const m = norm.match(/\d+/);
+      if(m){ setTarget(parseInt(m[0], 10)); return; }
+    }
+
+    // Count only when the recognized speech matches a known dhikr.
+    // This prevents ordinary conversation or background speech from incrementing the counter.
+    const idx = findMatchingPhrase(norm);
+    if(idx === -1){
+      announce(t('phraseNotRecognized'));
+      if(el.heardText) el.heardText.textContent = t('notRecognized') + ' : « ' + raw.trim() + ' »';
+      return;
+    }
+    if(idx !== state.phraseIndex){
+      setPhrase(idx, true);
+    }
+    increment();
+  }
+
+  function scheduleRecognitionRestart(){
+    clearTimeout(restartTimer);
+    if(!shouldListen) return;
+    restartTimer = setTimeout(() => {
+      if(shouldListen) startRecognition();
+    }, isSafari ? 800 : 250);
+  }
+
+  function startRecognition(){
+    if(!SpeechRecognition || !shouldListen || recognitionStarting) return;
+    recognitionStarting = true;
+
+    try{
+      recognition = new SpeechRecognition();
+      recognition.lang = 'ar-SA';
+      recognition.continuous = !isSafari;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = isSafari ? 3 : 5;
+
+      recognition.onstart = () => {
+        recognitionStarting = false;
+        setListeningUI(true);
+      };
+
+      recognition.onresult = (event) => {
+        for(let i = event.resultIndex; i < event.results.length; i++){
+          const res = event.results[i];
+          if(!res.isFinal) continue;
+
+          const alternatives = [];
+          for(let a = 0; a < res.length; a++){
+            const text = (res[a].transcript || '').trim();
+            if(text) alternatives.push(text);
+          }
+          if(!alternatives.length) continue;
+
+          let chosen = alternatives[0];
+          let matched = false;
+          for(const candidate of alternatives){
+            if(findMatchingPhrase(normalize(candidate)) !== -1){
+              chosen = candidate;
+              matched = true;
+              break;
+            }
+          }
+          handleTranscript(chosen);
+          if(!matched && el.heardText){
+            el.heardText.textContent = t('heard') + ' : « ' + alternatives[0] + ' »';
+          }
+        }
+      };
+
+      recognition.onend = () => {
+        recognitionStarting = false;
+        recognition = null;
+        if(shouldListen) scheduleRecognitionRestart();
+      };
+
+      recognition.onerror = (event) => {
+        recognitionStarting = false;
+        const err = event.error || '';
+        if(err === 'not-allowed' || err === 'service-not-allowed'){
+          shouldListen = false;
+          setListeningUI(false);
+          el.statusText.textContent = t('micDenied');
+          announce(t('micDeniedShort'));
+        }else if(err === 'audio-capture'){
+          shouldListen = false;
+          setListeningUI(false);
+          el.statusText.textContent = t('noMic');
+          announce(t('noMic'));
+        }else if(err === 'network'){
+          el.statusText.textContent = t('networkRetry');
+        }
+      };
+
+      recognition.start();
+
+      if(isSafari){
+        setTimeout(() => {
+          if(shouldListen && recognition && recognitionStarting){
+            recognitionStarting = false;
+            setListeningUI(true);
+          }
+        }, 500);
+      }
+    }catch(e){
+      recognitionStarting = false;
+      recognition = null;
+      if(isSafari && isStandalonePWA){
+        el.statusText.textContent = t('safariSpeechUnavailable');
+        el.supportNote.hidden = false;
+        el.supportNote.textContent = t('safariSpeechUnavailable');
+      }else{
+        el.statusText.textContent = t('micStartError') + ' (' + (e.message || t('unknownError')) + ')';
+      }
+      shouldListen = false;
+      setListeningUI(false);
+    }
+  }
+
+  function stopRecognition(){
+    shouldListen = false;
+    recognitionStarting = false;
+    clearTimeout(restartTimer);
+    restartTimer = null;
+    if(recognition){
+      try{ recognition.abort ? recognition.abort() : recognition.stop(); }catch(e){}
+    }
+    recognition = null;
+    setListeningUI(false);
+    if(state.paused) setPausedUI(false);
+  }
+
+  el.micToggle.addEventListener('click', async () => {
+    if(shouldListen){
+      stopRecognition();
+      return;
+    }
+
+    if(!SpeechRecognition){
+      el.supportNote.hidden = false;
+      if(isSafari && isStandalonePWA){
+        el.supportNote.textContent = t('safariSpeechUnavailable');
+        el.statusText.textContent = t('safariSpeechUnavailable');
+      }
+      return;
+    }
+
+    const permissionOK = await ensureMicrophonePermission();
+    if(!permissionOK) return;
+
+    shouldListen = true;
+    startRecognition();
+  });
+
+  if(!SpeechRecognition){
+    el.supportNote.hidden = false;
+    if(isSafari && isStandalonePWA){
+      el.supportNote.textContent = t('safariSpeechUnavailable');
+    }
+  }
+
+  // init
+  loadPhraseCounts();
+  loadSettings();
+  renderPhraseChoices();
+  renderTargetChoices();
+  setPhrase(0, false);
+  updateDisplay();
+  loadCustomPhrases();
+})();
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>
