@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v2-multibrowser';
+const CACHE_NAME = 'tasbih-plus-v6-reconnaissance-harakat';
 const APP_SHELL = [
   './',
   './index.html',
