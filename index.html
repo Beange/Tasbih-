@@ -796,6 +796,45 @@
     color:#F0C879;
   }
 
+
+  /* v16 — dhikrs longs sur toute la largeur */
+  #manageView .long-dhikr{grid-column:1 / -1 !important;width:100% !important;}
+  #manageView .long-dhikr [dir="rtl"],
+  #manageView .long-dhikr .arabic,
+  #manageView .long-dhikr .dhikr-arabic,
+  #manageView .long-dhikr .translit,
+  #manageView .long-dhikr .dhikr-translit{
+    max-width:none !important;
+    white-space:normal !important;
+  }
+
+
+  /* v17 — les 4 boutons de navigation sur une seule ligne */
+  .bottom-nav{
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:.2rem !important;
+  }
+  .bottom-nav .nav-btn{
+    min-width:0 !important;
+    padding:.5rem .12rem !important;
+    font-size:.66rem !important;
+  }
+  .bottom-nav .nav-btn span,
+  .bottom-nav .nav-btn .nav-label{
+    white-space:nowrap !important;
+  }
+  @media (max-width:390px){
+    .bottom-nav{
+      grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    }
+    .bottom-nav .nav-btn{
+      font-size:.59rem !important;
+      padding-left:.05rem !important;
+      padding-right:.05rem !important;
+    }
+  }
+
 </style>
 
 <link rel="manifest" href="manifest.webmanifest">
@@ -1590,6 +1629,28 @@
 
   if(el.asmaMainTab) el.asmaMainTab.addEventListener('click', () => setAsmaSection('main'));
   if(el.asmaExtraTab) el.asmaExtraTab.addEventListener('click', () => setAsmaSection('extra'));
+
+
+  function markLongDhikrCards(){
+    const manage = document.getElementById('manageView');
+    if(!manage) return;
+    const cards = manage.querySelectorAll('.dhikr-card,.saved-dhikr,.manage-card,.phrase-card,.item-card,[data-dhikr-card]');
+    cards.forEach(card=>{
+      const text = (card.textContent || '').trim().replace(/\s+/g,' ');
+      const words = text ? text.split(' ').length : 0;
+      card.classList.toggle('long-dhikr', text.length >= 95 || words >= 16);
+    });
+  }
+  const manageTarget = document.getElementById('manageView');
+  if(manageTarget){
+    new MutationObserver(markLongDhikrCards).observe(manageTarget,{childList:true,subtree:true,characterData:true});
+    requestAnimationFrame(markLongDhikrCards);
+  }
+  document.querySelectorAll('.nav-btn[data-view]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(btn.dataset.view==='manageView') requestAnimationFrame(markLongDhikrCards);
+    });
+  });
 
   function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }catch(e){} }
   function applySettings(){
