@@ -721,6 +721,81 @@
     letter-spacing:.04em;
   }
 
+
+  .asma-invoke{
+    margin:.55rem 0 0;
+    padding:.6rem .7rem;
+    border-radius:12px;
+    border:1px solid rgba(156,59,84,.14);
+    color:var(--text);
+    font-size:.75rem;
+    line-height:1.45;
+    text-align:left;
+  }
+  .asma-invoke-label{
+    display:block;
+    margin-bottom:.2rem;
+    color:var(--gold);
+    font-size:.66rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+
+
+  .asma-extra-section{
+    margin-top:.65rem;
+    padding-top:1rem;
+    border-top:1px solid rgba(156,59,84,.16);
+  }
+  .asma-extra-title{
+    margin:0 0 .35rem;
+    font-size:1.05rem;
+    color:var(--text);
+  }
+  .asma-extra-note{
+    margin:0 0 .85rem;
+    color:var(--text-muted);
+    font-size:.76rem;
+    line-height:1.45;
+  }
+  .asma-source{
+    margin:.55rem 0 0;
+    color:var(--text-muted);
+    font-size:.68rem;
+    line-height:1.4;
+  }
+
+
+  .asma-switcher{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.45rem;
+    margin:.65rem 0 .75rem;
+    padding:.3rem;
+    border-radius:15px;
+    background:var(--gold-soft);
+  }
+  .asma-tab{
+    min-height:2.65rem;
+    border:0;
+    border-radius:12px;
+    padding:.55rem .65rem;
+    background:transparent;
+    color:var(--text);
+    font:700 .78rem 'Inter',sans-serif;
+    cursor:pointer;
+  }
+  .asma-tab.active{
+    background:var(--bg-panel);
+    color:var(--gold);
+    box-shadow:0 4px 14px rgba(70,25,40,.08);
+  }
+  html[data-theme="dark"] .asma-tab.active{
+    background:#272C31;
+    color:#F0C879;
+  }
+
 </style>
 
 <link rel="manifest" href="manifest.webmanifest">
@@ -858,6 +933,12 @@
     <div class="page-header">
       <h1 data-i18n="asmaTitle">Asma</h1>
       <p data-i18n="asmaSubtitle">Les 99 beaux noms d’Allah — Al-Asma al-Husna.</p>
+      <p class="subtle" data-i18n="asmaGuidanceNote">Les situations et invocations ci-dessous sont des suggestions liées au sens des Noms, et non des formules obligatoires ni des effets garantis.</p>
+    </div>
+
+    <div class="asma-switcher" role="tablist" aria-label="Choisir la liste des noms">
+      <button id="asmaMainTab" class="asma-tab active" type="button" role="tab" aria-selected="true" data-i18n="asmaMainTab">99 Noms</button>
+      <button id="asmaExtraTab" class="asma-tab" type="button" role="tab" aria-selected="false" data-i18n="asmaExtraTab">Noms supplémentaires</button>
     </div>
 
     <div class="asma-toolbar">
@@ -873,7 +954,14 @@
         data-i18n-aria="asmaSearchAria">
     </div>
 
-    <div class="asma-grid" id="asmaGrid" aria-live="polite"></div>
+    <div id="asmaMainPanel">
+      <div class="asma-grid" id="asmaGrid" aria-live="polite"></div>
+    </div>
+
+    <section id="asmaExtraPanel" class="asma-extra-section" hidden>
+      <h2 class="asma-extra-title" data-i18n="asmaExtraTitle">Autres noms attestés dans le Coran et la Sunna</h2>
+      <div class="asma-grid" id="asmaExtraGrid"></div>
+    </section>
   </div>
 
   <div id="settingsView" class="app-view" hidden>
@@ -964,105 +1052,139 @@
   ];
 
   const ASMA_NAMES = [
-    { ar:'الرَّحْمَنُ', translit:'Ar-Rahmân', meaning:'Le Tout Miséricordieux', dua:'Yā Rahmān, enveloppe-moi de Ta miséricorde.' },
-    { ar:'الرَّحِيمُ', translit:'Ar-Rahîm', meaning:'Le Très Miséricordieux', dua:'Yā Rahīm, accorde-moi Ta miséricorde et Ton pardon.' },
-    { ar:'الْمَلِكُ', translit:'Al-Malik', meaning:'Le Souverain', dua:'Yā Malik, guide-moi à bien employer ce que Tu m’as confié.' },
-    { ar:'الْقُدُّوسُ', translit:'Al-Quddûs', meaning:'Le Très Saint', dua:'Yā Quddūs, purifie mon cœur et mes intentions.' },
-    { ar:'السَّلَامُ', translit:'As-Salâm', meaning:'La Source de paix', dua:'Yā Salām, accorde-moi la paix du cœur et préserve-moi du mal.' },
-    { ar:'الْمُؤْمِنُ', translit:'Al-Mu’min', meaning:'Le Garant de la sécurité', dua:'Yā Mu’min, accorde-moi sécurité et sérénité.' },
-    { ar:'الْمُهَيْمِنُ', translit:'Al-Muhaymin', meaning:'Le Protecteur et Surveillant', dua:'Yā Muhaymin, protège-moi et veille sur moi.' },
-    { ar:'الْعَزِيزُ', translit:'Al-‘Azîz', meaning:'Le Tout-Puissant', dua:'Yā ‘Azīz, accorde-moi force et dignité dans l’obéissance.' },
-    { ar:'الْجَبَّارُ', translit:'Al-Jabbâr', meaning:'Le Contraignant, Celui qui répare', dua:'Yā Jabbār, répare ce qui est brisé dans ma vie.' },
-    { ar:'الْمُتَكَبِّرُ', translit:'Al-Mutakabbir', meaning:'Le Suprême', dua:'Yā Mutakabbir, éloigne de mon cœur l’orgueil.' },
-    { ar:'الْخَالِقُ', translit:'Al-Khâliq', meaning:'Le Créateur', dua:'Yā Khāliq, améliore mon caractère et guide mes choix.' },
-    { ar:'الْبَارِئُ', translit:'Al-Bâri’', meaning:'Celui qui donne l’existence', dua:'Yā Bāri’, accorde-moi santé et équilibre.' },
-    { ar:'الْمُصَوِّرُ', translit:'Al-Musawwir', meaning:'Celui qui façonne', dua:'Yā Musawwir, embellis mon caractère par les bonnes qualités.' },
-    { ar:'الْغَفَّارُ', translit:'Al-Ghaffâr', meaning:'Le Grand Pardonneur', dua:'Yā Ghaffār, pardonne mes fautes répétées.' },
-    { ar:'الْقَهَّارُ', translit:'Al-Qahhâr', meaning:'Le Dominateur suprême', dua:'Yā Qahhār, aide-moi à vaincre mes mauvaises passions.' },
-    { ar:'الْوَهَّابُ', translit:'Al-Wahhâb', meaning:'Le Grand Donateur', dua:'Yā Wahhāb, accorde-moi de Tes dons par pure grâce.' },
-    { ar:'الرَّزَّاقُ', translit:'Ar-Razzâq', meaning:'Le Pourvoyeur', dua:'Yā Razzāq, accorde-moi une subsistance bonne et licite.' },
-    { ar:'الْفَتَّاحُ', translit:'Al-Fattâh', meaning:'Celui qui ouvre', dua:'Yā Fattāh, ouvre-moi les portes du bien.' },
-    { ar:'الْعَلِيمُ', translit:'Al-‘Alîm', meaning:'L’Omniscient', dua:'Yā ‘Alīm, accorde-moi une science utile.' },
-    { ar:'الْقَابِضُ', translit:'Al-Qâbid', meaning:'Celui qui retient', dua:'Yā Qābid, éloigne de moi ce qui me nuit.' },
-    { ar:'الْبَاسِطُ', translit:'Al-Bâsit', meaning:'Celui qui étend', dua:'Yā Bāsit, élargis pour moi Ta grâce et ma subsistance.' },
-    { ar:'الْخَافِضُ', translit:'Al-Khâfid', meaning:'Celui qui abaisse', dua:'Yā Khāfid, protège-moi de l’orgueil et de l’arrogance.' },
-    { ar:'الرَّافِعُ', translit:'Ar-Râfi’', meaning:'Celui qui élève', dua:'Yā Rāfi‘, élève-moi par la foi et les bonnes œuvres.' },
-    { ar:'الْمُعِزُّ', translit:'Al-Mu‘izz', meaning:'Celui qui donne la puissance', dua:'Yā Mu‘izz, accorde-moi une dignité qui vient de Toi.' },
-    { ar:'الْمُذِلُّ', translit:'Al-Mudhill', meaning:'Celui qui humilie', dua:'Yā Mudhill, préserve-moi des causes de l’humiliation.' },
-    { ar:'السَّمِيعُ', translit:'As-Samî‘', meaning:'Celui qui entend tout', dua:'Yā Samī‘, entends ma prière et mon invocation.' },
-    { ar:'الْبَصِيرُ', translit:'Al-Basîr', meaning:'Celui qui voit tout', dua:'Yā Basīr, vois ma situation et guide-moi vers le bien.' },
-    { ar:'الْحَكَمُ', translit:'Al-Hakam', meaning:'Le Juge', dua:'Yā Hakam, juge entre mes affaires avec vérité.' },
-    { ar:'الْعَدْلُ', translit:'Al-‘Adl', meaning:'Le Parfaitement Juste', dua:'Yā ‘Adl, aide-moi à être juste envers les autres.' },
-    { ar:'اللَّطِيفُ', translit:'Al-Latîf', meaning:'Le Subtil et Bienveillant', dua:'Yā Latīf, sois doux envers moi dans ce que je traverse.' },
-    { ar:'الْخَبِيرُ', translit:'Al-Khabîr', meaning:'Le Parfaitement Informé', dua:'Yā Khabīr, guide-moi puisque Tu connais parfaitement ma situation.' },
-    { ar:'الْحَلِيمُ', translit:'Al-Halîm', meaning:'Le Très Clément', dua:'Yā Halīm, accorde-moi patience et maîtrise de moi.' },
-    { ar:'الْعَظِيمُ', translit:'Al-‘Azîm', meaning:'L’Immense', dua:'Yā ‘Azīm, remplis mon cœur de respect pour Ta grandeur.' },
-    { ar:'الْغَفُورُ', translit:'Al-Ghafûr', meaning:'Le Très Pardonneur', dua:'Yā Ghafūr, pardonne-moi et couvre mes fautes.' },
-    { ar:'الشَّكُورُ', translit:'Ash-Shakûr', meaning:'Celui qui reconnaît et récompense', dua:'Yā Shakūr, accepte mes petites œuvres et multiplie leur récompense.' },
-    { ar:'الْعَلِيُّ', translit:'Al-‘Aliyy', meaning:'Le Très-Haut', dua:'Yā ‘Aliyy, élève mes aspirations vers ce qui Te plaît.' },
-    { ar:'الْكَبِيرُ', translit:'Al-Kabîr', meaning:'Le Très-Grand', dua:'Yā Kabīr, rappelle à mon cœur que toute grandeur T’appartient.' },
-    { ar:'الْحَفِيظُ', translit:'Al-Hafîz', meaning:'Le Préservateur', dua:'Yā Hafīz, protège-moi, ma famille et ma foi.' },
-    { ar:'الْمُقِيتُ', translit:'Al-Muqît', meaning:'Celui qui nourrit et soutient', dua:'Yā Muqīt, nourris mon corps et mon cœur de ce qui est bon.' },
-    { ar:'الْحَسِيبُ', translit:'Al-Hasîb', meaning:'Celui qui suffit pour demander des comptes', dua:'Yā Hasīb, suffis-moi dans mes besoins et facilite mes comptes.' },
-    { ar:'الْجَلِيلُ', translit:'Al-Jalîl', meaning:'Le Majestueux', dua:'Yā Jalīl, accorde-moi de Te révérer comme il convient.' },
-    { ar:'الْكَرِيمُ', translit:'Al-Karîm', meaning:'Le Généreux', dua:'Yā Karīm, comble-moi de Ta générosité.' },
-    { ar:'الرَّقِيبُ', translit:'Ar-Raqîb', meaning:'Le Vigilant', dua:'Yā Raqīb, aide-moi à vivre en sachant que Tu me vois.' },
-    { ar:'الْمُجِيبُ', translit:'Al-Mujîb', meaning:'Celui qui répond', dua:'Yā Mujīb, réponds à mon invocation si elle est un bien pour moi.' },
-    { ar:'الْوَاسِعُ', translit:'Al-Wâsi‘', meaning:'L’Immense, Celui dont la grâce est vaste', dua:'Yā Wāsi‘, accorde-moi de l’ampleur dans Ta miséricorde.' },
-    { ar:'الْحَكِيمُ', translit:'Al-Hakîm', meaning:'Le Sage', dua:'Yā Hakīm, accorde-moi sagesse et bon jugement.' },
-    { ar:'الْوَدُودُ', translit:'Al-Wadûd', meaning:'Le Tout-Aimant', dua:'Yā Wadūd, mets l’amour sincère et la bonté dans mon cœur.' },
-    { ar:'الْمَجِيدُ', translit:'Al-Majîd', meaning:'Le Glorieux', dua:'Yā Majīd, accorde-moi de T’honorer par mes actes.' },
-    { ar:'الْبَاعِثُ', translit:'Al-Bâ‘ith', meaning:'Celui qui ressuscite', dua:'Yā Bā‘ith, ranime mon cœur dans l’obéissance.' },
-    { ar:'الشَّهِيدُ', translit:'Ash-Shahîd', meaning:'Le Témoin', dua:'Yā Shahīd, sois témoin de ma sincérité et rectifie-la.' },
-    { ar:'الْحَقُّ', translit:'Al-Haqq', meaning:'La Vérité', dua:'Yā Haqq, montre-moi la vérité et aide-moi à la suivre.' },
-    { ar:'الْوَكِيلُ', translit:'Al-Wakîl', meaning:'Le Garant', dua:'Yā Wakīl, je Te confie mes affaires : facilite ce qui est bon.' },
-    { ar:'الْقَوِيُّ', translit:'Al-Qawiyy', meaning:'Le Fort', dua:'Yā Qawiyy, donne-moi la force d’accomplir le bien.' },
-    { ar:'الْمَتِينُ', translit:'Al-Matîn', meaning:'L’Inébranlable', dua:'Yā Matīn, affermis-moi dans la foi et la patience.' },
-    { ar:'الْوَلِيُّ', translit:'Al-Waliyy', meaning:'Le Protecteur proche', dua:'Yā Waliyy, sois mon Protecteur et guide-moi.' },
-    { ar:'الْحَمِيدُ', translit:'Al-Hamîd', meaning:'Le Digne de louange', dua:'Yā Hamīd, aide-moi à Te louer dans l’aisance comme dans l’épreuve.' },
-    { ar:'الْمُحْصِي', translit:'Al-Muhsî', meaning:'Celui qui dénombre toute chose', dua:'Yā Muhsī, aide-moi à employer mes jours dans ce qui est utile.' },
-    { ar:'الْمُبْدِئُ', translit:'Al-Mubdi’', meaning:'Celui qui commence la création', dua:'Yā Mubdi’, ouvre pour moi un nouveau commencement dans le bien.' },
-    { ar:'الْمُعِيدُ', translit:'Al-Mu‘îd', meaning:'Celui qui ramène à l’existence', dua:'Yā Mu‘īd, ramène mon cœur vers Toi lorsque je m’éloigne.' },
-    { ar:'الْمُحْيِي', translit:'Al-Muhyî', meaning:'Celui qui donne la vie', dua:'Yā Muhyī, vivifie mon cœur par la foi.' },
-    { ar:'الْمُمِيتُ', translit:'Al-Mumît', meaning:'Celui qui donne la mort', dua:'Yā Mumīt, accorde-moi une bonne fin.' },
-    { ar:'الْحَيُّ', translit:'Al-Hayy', meaning:'Le Vivant', dua:'Yā Hayy, accorde à mon cœur une vie de foi.' },
-    { ar:'الْقَيُّومُ', translit:'Al-Qayyûm', meaning:'Celui qui subsiste par Lui-même et soutient toute chose', dua:'Yā Qayyūm, soutiens-moi et ne me laisse pas à moi-même.' },
-    { ar:'الْوَاجِدُ', translit:'Al-Wâjid', meaning:'Celui qui trouve et ne manque de rien', dua:'Yā Wājid, accorde-moi de trouver le bien que je cherche auprès de Toi.' },
-    { ar:'الْمَاجِدُ', translit:'Al-Mâjid', meaning:'Le Très Noble', dua:'Yā Mājid, ennoblis mon caractère et mes œuvres.' },
-    { ar:'الْوَاحِدُ', translit:'Al-Wâhid', meaning:'L’Unique', dua:'Yā Wāhid, unifie mon cœur dans l’adoration de Toi seul.' },
-    { ar:'الْأَحَدُ', translit:'Al-Ahad', meaning:'L’Un', dua:'Yā Ahad, raffermis mon attachement à Ton unicité.' },
-    { ar:'الصَّمَدُ', translit:'As-Samad', meaning:'L’Absolu, Celui dont tous dépendent', dua:'Yā Samad, je me tourne vers Toi dans tous mes besoins.' },
-    { ar:'الْقَادِرُ', translit:'Al-Qâdir', meaning:'Le Tout-Puissant capable de toute chose', dua:'Yā Qādir, accorde-moi ce bien si Tu le veux.' },
-    { ar:'الْمُقْتَدِرُ', translit:'Al-Muqtadir', meaning:'Le Parfaitement Puissant', dua:'Yā Muqtadir, facilite ce qui me paraît impossible si cela est un bien.' },
-    { ar:'الْمُقَدِّمُ', translit:'Al-Muqaddim', meaning:'Celui qui fait avancer', dua:'Yā Muqaddim, fais avancer dans ma vie ce qui est meilleur pour moi.' },
-    { ar:'الْمُؤَخِّرُ', translit:'Al-Mu’akhkhir', meaning:'Celui qui fait reculer', dua:'Yā Mu’akhkhir, éloigne ou retarde ce qui me serait nuisible.' },
-    { ar:'الْأَوَّلُ', translit:'Al-Awwal', meaning:'Le Premier', dua:'Yā Awwal, bénis le commencement de mes projets.' },
-    { ar:'الْآخِرُ', translit:'Al-Âkhir', meaning:'Le Dernier', dua:'Yā Ākhir, accorde-moi une bonne fin dans mes affaires.' },
-    { ar:'الظَّاهِرُ', translit:'Az-Zâhir', meaning:'Le Manifeste', dua:'Yā Zāhir, rends-moi clairs les signes du bien et de la vérité.' },
-    { ar:'الْبَاطِنُ', translit:'Al-Bâtin', meaning:'Le Caché', dua:'Yā Bātin, purifie ce qui est caché dans mon cœur.' },
-    { ar:'الْوَالِي', translit:'Al-Wâlî', meaning:'Le Gouverneur', dua:'Yā Wālī, dirige mes affaires vers ce qui est juste.' },
-    { ar:'الْمُتَعَالِي', translit:'Al-Muta‘âlî', meaning:'Le Très-Élevé', dua:'Yā Muta‘ālī, élève mon cœur au-dessus des choses qui m’éloignent de Toi.' },
-    { ar:'الْبَرُّ', translit:'Al-Barr', meaning:'La Source de toute bonté', dua:'Yā Barr, accorde-moi Ta bonté et aide-moi à faire le bien.' },
-    { ar:'التَّوَّابُ', translit:'At-Tawwâb', meaning:'Celui qui accueille le repentir', dua:'Yā Tawwāb, accepte mon repentir et aide-moi à revenir vers Toi.' },
-    { ar:'الْمُنْتَقِمُ', translit:'Al-Muntaqim', meaning:'Celui qui rétribue avec justice', dua:'Yā Muntaqim, protège-moi de l’injustice et accorde une justice équitable.' },
-    { ar:'الْعَفُوُّ', translit:'Al-‘Afuww', meaning:'Celui qui efface les fautes', dua:'Yā ‘Afuww, efface mes fautes et pardonne-moi.' },
-    { ar:'الرَّؤُوفُ', translit:'Ar-Ra’ûf', meaning:'Le Très Compatissant', dua:'Yā Ra’ūf, traite-moi avec compassion et douceur.' },
-    { ar:'مَالِكُ الْمُلْكِ', translit:'Mâlik-ul-Mulk', meaning:'Le Maître de la royauté', dua:'Yā Mālik al-Mulk, accorde-moi le bien de ce monde sans qu’il possède mon cœur.' },
-    { ar:'ذُو الْجَلَالِ وَالْإِكْرَامِ', translit:'Dhul-Jalâli wal-Ikrâm', meaning:'Le Détenteur de la majesté et de la générosité', dua:'Yā Dhul-Jalāli wal-Ikrām, honore-moi par Ton pardon et Ta générosité.' },
-    { ar:'الْمُقْسِطُ', translit:'Al-Muqsit', meaning:'L’Équitable', dua:'Yā Muqsit, aide-moi à agir avec équité.' },
-    { ar:'الْجَامِعُ', translit:'Al-Jâmi‘', meaning:'Celui qui rassemble', dua:'Yā Jāmi‘, rassemble ma famille et mon cœur autour du bien.' },
-    { ar:'الْغَنِيُّ', translit:'Al-Ghaniyy', meaning:'Celui qui se suffit à Lui-même', dua:'Yā Ghaniyy, enrichis mon cœur par le contentement.' },
-    { ar:'الْمُغْنِي', translit:'Al-Mughnî', meaning:'Celui qui enrichit', dua:'Yā Mughnī, accorde-moi une suffisance licite et bénie.' },
-    { ar:'الْمَانِعُ', translit:'Al-Mâni‘', meaning:'Celui qui empêche', dua:'Yā Māni‘, préserve-moi de ce qui me ferait du mal.' },
-    { ar:'الضَّارُّ', translit:'Ad-Dârr', meaning:'Celui qui peut laisser atteindre l’épreuve', dua:'Yā Dārr, protège-moi des épreuves qui me détourneraient de Toi.' },
-    { ar:'النَّافِعُ', translit:'An-Nâfi‘', meaning:'Celui qui accorde le bénéfice', dua:'Yā Nāfi‘, accorde-moi ce qui m’est réellement bénéfique.' },
-    { ar:'النُّورُ', translit:'An-Nûr', meaning:'La Lumière', dua:'Yā Nūr, illumine mon cœur et mon chemin.' },
-    { ar:'الْهَادِي', translit:'Al-Hâdî', meaning:'Le Guide', dua:'Yā Hādī, guide-moi vers le droit chemin.' },
-    { ar:'الْبَدِيعُ', translit:'Al-Badî‘', meaning:'L’Incomparable Créateur', dua:'Yā Badī‘, ouvre-moi des solutions auxquelles je ne pensais pas.' },
-    { ar:'الْبَاقِي', translit:'Al-Bâqî', meaning:'L’Éternel, Celui qui demeure', dua:'Yā Bāqī, attache mon cœur à ce qui demeure auprès de Toi.' },
-    { ar:'الْوَارِثُ', translit:'Al-Wârith', meaning:'L’Héritier', dua:'Yā Wārith, aide-moi à laisser derrière moi des œuvres utiles.' },
-    { ar:'الرَّشِيدُ', translit:'Ar-Rashîd', meaning:'Le Guide vers la droiture', dua:'Yā Rashīd, guide mes décisions vers ce qui est droit.' },
-    { ar:'الصَّبُورُ', translit:'As-Sabûr', meaning:'Le Très Patient', dua:'Yā Sabūr, accorde-moi patience et constance.' }
+    { ar:'الرَّحْمَنُ', translit:'Ar-Rahmân', meaning:'Le Tout Miséricordieux', when:'quand vous demandez la miséricorde d’Allah', dua:'Yā Rahmān, enveloppe-moi de Ta miséricorde, apaise mon cœur et fais-moi miséricordieux envers les autres.' },
+    { ar:'الرَّحِيمُ', translit:'Ar-Rahîm', meaning:'Le Très Miséricordieux', when:'quand vous espérez le pardon et la compassion d’Allah', dua:'Yā Rahīm, fais-moi miséricorde, pardonne mes manquements et guide-moi vers ce qui Te plaît.' },
+    { ar:'الْمَلِكُ', translit:'Al-Malik', meaning:'Le Souverain', when:'quand vous demandez à Allah de guider vos responsabilités', dua:'Yā Malik, guide-moi dans mes responsabilités et aide-moi à utiliser avec justice ce que Tu m’as confié.' },
+    { ar:'الْقُدُّوسُ', translit:'Al-Quddûs', meaning:'Le Très Saint', when:'quand vous souhaitez purifier votre cœur et vos intentions', dua:'Yā Quddūs, purifie mon cœur, mes intentions et mes œuvres de ce qui ne Te plaît pas.' },
+    { ar:'السَّلَامُ', translit:'As-Salâm', meaning:'La Source de paix', when:'quand vous recherchez la paix, la sécurité ou l’apaisement', dua:'Yā Salām, accorde-moi la paix du cœur, protège-moi du mal et fais de moi une cause de paix.' },
+    { ar:'الْمُؤْمِنُ', translit:'Al-Mu’min', meaning:'Le Garant de la sécurité', when:'quand vous avez peur ou recherchez la sécurité', dua:'Yā Mu’min, rassure mon cœur, accorde-moi sécurité et raffermis ma confiance en Toi.' },
+    { ar:'الْمُهَيْمِنُ', translit:'Al-Muhaymin', meaning:'Le Protecteur et Surveillant', when:'quand vous demandez protection et vigilance', dua:'Yā Muhaymin, veille sur moi, protège ma famille et préserve-nous de ce que nous ne voyons pas.' },
+    { ar:'الْعَزِيزُ', translit:'Al-‘Azîz', meaning:'Le Tout-Puissant', when:'quand vous avez besoin de force et de dignité dans le bien', dua:'Yā ‘Azīz, donne-moi la force de rester dans le bien et une dignité qui ne m’éloigne pas de Toi.' },
+    { ar:'الْجَبَّارُ', translit:'Al-Jabbâr', meaning:'Le Contraignant, Celui qui répare', when:'quand vous traversez une épreuve ou quelque chose de brisé dans votre vie', dua:'Yā Jabbār, répare ce qui est brisé en moi, console mon cœur et facilite-moi une issue meilleure.' },
+    { ar:'الْمُتَكَبِّرُ', translit:'Al-Mutakabbir', meaning:'Le Suprême', when:'quand vous voulez vous préserver de l’orgueil', dua:'Yā Mutakabbir, débarrasse mon cœur de l’orgueil et apprends-moi l’humilité devant Toi.' },
+    { ar:'الْخَالِقُ', translit:'Al-Khâliq', meaning:'Le Créateur', when:'quand vous demandez à Allah de vous guider dans un nouveau projet', dua:'Yā Khāliq, guide mes choix, améliore mon caractère et fais de moi une personne utile.' },
+    { ar:'الْبَارِئُ', translit:'Al-Bâri’', meaning:'Celui qui donne l’existence', when:'quand vous demandez santé, équilibre ou rétablissement', dua:'Yā Bāri’, accorde-moi équilibre, santé et bien-être, et facilite-moi les causes de la guérison.' },
+    { ar:'الْمُصَوِّرُ', translit:'Al-Musawwir', meaning:'Celui qui façonne', when:'quand vous demandez l’embellissement de votre caractère', dua:'Yā Musawwir, embellis mon caractère par la patience, la sincérité et la bonté.' },
+    { ar:'الْغَفَّارُ', translit:'Al-Ghaffâr', meaning:'Le Grand Pardonneur', when:'quand vous demandez pardon pour des fautes répétées', dua:'Yā Ghaffār, pardonne mes fautes répétées, couvre mes défauts et aide-moi à ne pas y retourner.' },
+    { ar:'الْقَهَّارُ', translit:'Al-Qahhâr', meaning:'Le Dominateur suprême', when:'quand vous cherchez à maîtriser une mauvaise habitude ou une passion', dua:'Yā Qahhār, aide-moi à maîtriser mes passions, mes mauvaises habitudes et tout ce qui m’éloigne de Toi.' },
+    { ar:'الْوَهَّابُ', translit:'Al-Wahhâb', meaning:'Le Grand Donateur', when:'quand vous demandez un don ou une faveur', dua:'Yā Wahhāb, accorde-moi de Tes dons sans que je les mérite et mets-y une bénédiction durable.' },
+    { ar:'الرَّزَّاقُ', translit:'Ar-Razzâq', meaning:'Le Pourvoyeur', when:'quand vous demandez une subsistance bonne et licite', dua:'Yā Razzāq, accorde-moi une subsistance licite et bénie, suffis-moi par ce que Tu m’accordes et éloigne-moi de l’illicite.' },
+    { ar:'الْفَتَّاحُ', translit:'Al-Fattâh', meaning:'Celui qui ouvre', when:'quand vous cherchez une ouverture ou une solution', dua:'Yā Fattāh, ouvre-moi les portes du bien, facilite ce qui est difficile et montre-moi une issue juste.' },
+    { ar:'الْعَلِيمُ', translit:'Al-‘Alîm', meaning:'L’Omniscient', when:'quand vous demandez une science utile ou de la compréhension', dua:'Yā ‘Alīm, enseigne-moi ce qui m’est utile, augmente ma compréhension et préserve-moi d’agir sans savoir.' },
+    { ar:'الْقَابِضُ', translit:'Al-Qâbid', meaning:'Celui qui retient', when:'quand vous demandez qu’un mal soit éloigné', dua:'Yā Qābid, éloigne de moi ce qui me nuit et aide-moi à accepter avec confiance ce que Tu retiens.' },
+    { ar:'الْبَاسِطُ', translit:'Al-Bâsit', meaning:'Celui qui étend', when:'quand vous demandez l’aisance et l’élargissement d’une situation', dua:'Yā Bāsit, élargis pour moi Ta grâce, ma subsistance et mon cœur, et mets-y la bénédiction.' },
+    { ar:'الْخَافِضُ', translit:'Al-Khâfid', meaning:'Celui qui abaisse', when:'quand vous souhaitez être protégé de l’arrogance', dua:'Yā Khāfid, protège-moi de l’arrogance et apprends-moi à rester humble dans la réussite.' },
+    { ar:'الرَّافِعُ', translit:'Ar-Râfi’', meaning:'Celui qui élève', when:'quand vous demandez à être élevé par la foi et les bonnes œuvres', dua:'Yā Rāfi‘, élève-moi par la foi, la connaissance utile et les bonnes œuvres.' },
+    { ar:'الْمُعِزُّ', translit:'Al-Mu‘izz', meaning:'Celui qui donne la puissance', when:'quand vous demandez dignité et honneur dans l’obéissance', dua:'Yā Mu‘izz, accorde-moi une dignité fondée sur l’obéissance et préserve-moi de chercher l’honneur dans le mal.' },
+    { ar:'الْمُذِلُّ', translit:'Al-Mudhill', meaning:'Celui qui humilie', when:'quand vous demandez protection contre l’humiliation', dua:'Yā Mudhill, protège-moi des actes qui conduisent à l’humiliation et ramène-moi vers ce qui est digne.' },
+    { ar:'السَّمِيعُ', translit:'As-Samî‘', meaning:'Celui qui entend tout', when:'quand vous voulez confier une invocation à Celui qui entend tout', dua:'Yā Samī‘, entends mon invocation, mes inquiétudes et mes besoins, même lorsque je peine à les exprimer.' },
+    { ar:'الْبَصِيرُ', translit:'Al-Basîr', meaning:'Celui qui voit tout', when:'quand vous demandez à Allah de voir votre situation et de vous guider', dua:'Yā Basīr, Tu vois ma situation : guide-moi vers ce qui est meilleur et protège-moi de mes mauvais choix.' },
+    { ar:'الْحَكَمُ', translit:'Al-Hakam', meaning:'Le Juge', when:'quand vous avez besoin d’un jugement juste', dua:'Yā Hakam, tranche mes affaires avec vérité et aide-moi à accepter ce qui est juste.' },
+    { ar:'الْعَدْلُ', translit:'Al-‘Adl', meaning:'Le Parfaitement Juste', when:'quand vous demandez de l’aide pour agir avec justice', dua:'Yā ‘Adl, aide-moi à être juste dans mes paroles, mes décisions et mes relations.' },
+    { ar:'اللَّطِيفُ', translit:'Al-Latîf', meaning:'Le Subtil et Bienveillant', when:'quand vous traversez une difficulté et recherchez la douceur d’Allah', dua:'Yā Latīf, sois doux envers moi dans cette épreuve et fais-moi parvenir le bien par des voies que je n’attends pas.' },
+    { ar:'الْخَبِيرُ', translit:'Al-Khabîr', meaning:'Le Parfaitement Informé', when:'quand vous êtes dans une situation complexe qu’Allah connaît parfaitement', dua:'Yā Khabīr, Tu connais ce que je cache et ce que j’ignore : guide-moi vers la décision la plus bénéfique.' },
+    { ar:'الْحَلِيمُ', translit:'Al-Halîm', meaning:'Le Très Clément', when:'quand vous demandez patience, douceur et maîtrise de soi', dua:'Yā Halīm, accorde-moi patience, maîtrise de moi et douceur lorsque je suis contrarié.' },
+    { ar:'الْعَظِيمُ', translit:'Al-‘Azîm', meaning:'L’Immense', when:'quand vous méditez sur la grandeur d’Allah', dua:'Yā ‘Azīm, remplis mon cœur de respect pour Ta grandeur et rends petites à mes yeux les vanités de ce monde.' },
+    { ar:'الْغَفُورُ', translit:'Al-Ghafûr', meaning:'Le Très Pardonneur', when:'quand vous demandez pardon et protection contre les conséquences de vos fautes', dua:'Yā Ghafūr, pardonne-moi, couvre mes fautes et accorde-moi la force de les abandonner.' },
+    { ar:'الشَّكُورُ', translit:'Ash-Shakûr', meaning:'Celui qui reconnaît et récompense', when:'quand vous demandez l’acceptation et la récompense de vos bonnes œuvres', dua:'Yā Shakūr, accepte mes œuvres malgré leurs imperfections et aide-moi à être reconnaissant pour Tes bienfaits.' },
+    { ar:'الْعَلِيُّ', translit:'Al-‘Aliyy', meaning:'Le Très-Haut', when:'quand vous souhaitez élever vos aspirations vers le bien', dua:'Yā ‘Aliyy, élève mes aspirations vers ce qui Te plaît et éloigne-moi de ce qui rabaisse mon âme.' },
+    { ar:'الْكَبِيرُ', translit:'Al-Kabîr', meaning:'Le Très-Grand', when:'quand vous voulez vous rappeler que toute grandeur appartient à Allah', dua:'Yā Kabīr, rappelle-moi que toute grandeur T’appartient et protège-moi de me croire supérieur aux autres.' },
+    { ar:'الْحَفِيظُ', translit:'Al-Hafîz', meaning:'Le Préservateur', when:'quand vous demandez protection pour votre foi, votre famille ou vos biens', dua:'Yā Hafīz, préserve ma foi, ma famille, ma santé et protège-nous des maux visibles et invisibles.' },
+    { ar:'الْمُقِيتُ', translit:'Al-Muqît', meaning:'Celui qui nourrit et soutient', when:'quand vous demandez nourriture, force ou soutien', dua:'Yā Muqīt, accorde-moi ce qui nourrit mon corps et mon cœur et donne-moi la force d’accomplir le bien.' },
+    { ar:'الْحَسِيبُ', translit:'Al-Hasîb', meaning:'Celui qui suffit pour demander des comptes', when:'quand vous demandez qu’Allah vous suffise dans une affaire', dua:'Yā Hasīb, suffis-moi dans mes besoins, facilite mes responsabilités et accorde-moi un compte facile.' },
+    { ar:'الْجَلِيلُ', translit:'Al-Jalîl', meaning:'Le Majestueux', when:'quand vous souhaitez développer révérence et respect envers Allah', dua:'Yā Jalīl, augmente en moi la révérence, le respect de Tes limites et la conscience de Ta majesté.' },
+    { ar:'الْكَرِيمُ', translit:'Al-Karîm', meaning:'Le Généreux', when:'quand vous demandez générosité, pardon ou bienfaits', dua:'Yā Karīm, accorde-moi généreusement Ton pardon, Tes bienfaits et un cœur qui partage avec les autres.' },
+    { ar:'الرَّقِيبُ', translit:'Ar-Raqîb', meaning:'Le Vigilant', when:'quand vous voulez renforcer votre conscience qu’Allah vous observe', dua:'Yā Raqīb, aide-moi à me rappeler que Tu me vois et à rester sincère même lorsque personne ne me regarde.' },
+    { ar:'الْمُجِيبُ', translit:'Al-Mujîb', meaning:'Celui qui répond', when:'quand vous demandez à Allah de répondre à une invocation', dua:'Yā Mujīb, réponds à mon invocation si elle est un bien pour moi et accorde-moi mieux si ce que je demande ne l’est pas.' },
+    { ar:'الْوَاسِعُ', translit:'Al-Wâsi‘', meaning:'L’Immense, Celui dont la grâce est vaste', when:'quand vous demandez une grâce vaste ou une issue dans une situation étroite', dua:'Yā Wāsi‘, élargis pour moi Ta miséricorde, ma compréhension et les portes du bien.' },
+    { ar:'الْحَكِيمُ', translit:'Al-Hakîm', meaning:'Le Sage', when:'quand vous avez besoin de sagesse pour prendre une décision', dua:'Yā Hakīm, donne-moi sagesse, discernement et sérénité pour prendre la bonne décision.' },
+    { ar:'الْوَدُودُ', translit:'Al-Wadûd', meaning:'Le Tout-Aimant', when:'quand vous demandez amour sincère, affection et bonté', dua:'Yā Wadūd, mets dans mon cœur un amour sincère, répare mes relations et fais-moi aimer ce qui Te plaît.' },
+    { ar:'الْمَجِيدُ', translit:'Al-Majîd', meaning:'Le Glorieux', when:'quand vous souhaitez glorifier Allah et rechercher une vie honorable', dua:'Yā Majīd, accorde-moi une vie honorable dans l’obéissance et fais de mes œuvres une cause de bien.' },
+    { ar:'الْبَاعِثُ', translit:'Al-Bâ‘ith', meaning:'Celui qui ressuscite', when:'quand vous demandez que votre cœur soit réveillé dans la foi', dua:'Yā Bā‘ith, réveille mon cœur lorsqu’il devient négligent et ranime en moi le désir de faire le bien.' },
+    { ar:'الشَّهِيدُ', translit:'Ash-Shahîd', meaning:'Le Témoin', when:'quand vous demandez sincérité et droiture dans vos actes', dua:'Yā Shahīd, Tu es témoin de mes intentions : rends-les sincères et aide-moi à agir avec droiture.' },
+    { ar:'الْحَقُّ', translit:'Al-Haqq', meaning:'La Vérité', when:'quand vous cherchez la vérité ou devez distinguer le vrai du faux', dua:'Yā Haqq, montre-moi la vérité comme vérité, aide-moi à la suivre et protège-moi de la confusion.' },
+    { ar:'الْوَكِيلُ', translit:'Al-Wakîl', meaning:'Le Garant', when:'quand vous confiez une affaire à Allah', dua:'Yā Wakīl, je Te confie cette affaire : facilite ce qui est bon pour moi et détourne-moi de ce qui me nuit.' },
+    { ar:'الْقَوِيُّ', translit:'Al-Qawiyy', meaning:'Le Fort', when:'quand vous avez besoin de force pour accomplir le bien', dua:'Yā Qawiyy, donne-moi la force de faire ce qui est juste, de résister au mal et de persévérer.' },
+    { ar:'الْمَتِينُ', translit:'Al-Matîn', meaning:'L’Inébranlable', when:'quand vous demandez fermeté et constance', dua:'Yā Matīn, affermis ma foi, ma patience et mes engagements lorsque les difficultés se prolongent.' },
+    { ar:'الْوَلِيُّ', translit:'Al-Waliyy', meaning:'Le Protecteur proche', when:'quand vous recherchez la protection et la proximité d’Allah', dua:'Yā Waliyy, protège-moi, rapproche-moi de Toi et guide-moi vers des compagnons et des choix bénéfiques.' },
+    { ar:'الْحَمِيدُ', translit:'Al-Hamîd', meaning:'Le Digne de louange', when:'quand vous voulez remercier et louer Allah', dua:'Yā Hamīd, apprends-moi à Te louer dans l’aisance comme dans l’épreuve et à reconnaître Tes bienfaits.' },
+    { ar:'الْمُحْصِي', translit:'Al-Muhsî', meaning:'Celui qui dénombre toute chose', when:'quand vous voulez mieux employer votre temps et vos œuvres', dua:'Yā Muhsī, aide-moi à préserver mon temps, à compter mes bienfaits et à multiplier les œuvres utiles.' },
+    { ar:'الْمُبْدِئُ', translit:'Al-Mubdi’', meaning:'Celui qui commence la création', when:'quand vous commencez une nouvelle étape dans le bien', dua:'Yā Mubdi’, accorde-moi un nouveau départ sincère et facilite-moi le premier pas vers le bien.' },
+    { ar:'الْمُعِيدُ', translit:'Al-Mu‘îd', meaning:'Celui qui ramène à l’existence', when:'quand vous souhaitez revenir vers Allah après vous être éloigné', dua:'Yā Mu‘īd, ramène mon cœur vers Toi chaque fois que je m’éloigne et restaure ce qui peut l’être dans ma vie.' },
+    { ar:'الْمُحْيِي', translit:'Al-Muhyî', meaning:'Celui qui donne la vie', when:'quand vous demandez qu’Allah vivifie votre cœur par la foi', dua:'Yā Muhyī, vivifie mon cœur par la foi, la connaissance et les œuvres qui Te plaisent.' },
+    { ar:'الْمُمِيتُ', translit:'Al-Mumît', meaning:'Celui qui donne la mort', when:'quand vous pensez à la fin de votre vie et demandez une bonne fin', dua:'Yā Mumīt, accorde-moi de vivre dans le bien et de Te rencontrer avec une bonne fin.' },
+    { ar:'الْحَيُّ', translit:'Al-Hayy', meaning:'Le Vivant', when:'quand vous demandez vitalité spirituelle et foi', dua:'Yā Hayy, vivifie mon cœur, renouvelle ma foi et accorde-moi une vie employée dans ce qui est utile.' },
+    { ar:'الْقَيُّومُ', translit:'Al-Qayyûm', meaning:'Celui qui subsiste par Lui-même et soutient toute chose', when:'quand vous avez besoin d’être soutenu dans toutes vos affaires', dua:'Yā Qayyūm, soutiens-moi dans mes affaires, raffermis-moi et ne me laisse pas dépendre de mes seules forces.' },
+    { ar:'الْوَاجِدُ', translit:'Al-Wâjid', meaning:'Celui qui trouve et ne manque de rien', when:'quand vous cherchez auprès d’Allah ce dont vous avez besoin', dua:'Yā Wājid, accorde-moi de trouver auprès de Toi ce dont j’ai réellement besoin et rends mon cœur satisfait.' },
+    { ar:'الْمَاجِدُ', translit:'Al-Mâjid', meaning:'Le Très Noble', when:'quand vous demandez noblesse de caractère', dua:'Yā Mājid, ennoblis mon caractère, mes intentions et mes œuvres, et éloigne-moi de la bassesse.' },
+    { ar:'الْوَاحِدُ', translit:'Al-Wâhid', meaning:'L’Unique', when:'quand vous voulez renforcer l’unité de votre adoration envers Allah', dua:'Yā Wāhid, rassemble mon cœur dans Ton adoration et libère-moi des attachements qui me dispersent.' },
+    { ar:'الْأَحَدُ', translit:'Al-Ahad', meaning:'L’Un', when:'quand vous méditez sur l’unicité absolue d’Allah', dua:'Yā Ahad, raffermis ma foi en Ton unicité et fais que je me tourne sincèrement vers Toi seul.' },
+    { ar:'الصَّمَدُ', translit:'As-Samad', meaning:'L’Absolu, Celui dont tous dépendent', when:'quand vous avez un besoin et voulez vous tourner entièrement vers Allah', dua:'Yā Samad, je me tourne vers Toi dans mon besoin : suffis-moi, guide-moi et accorde-moi ce qui est meilleur.' },
+    { ar:'الْقَادِرُ', translit:'Al-Qâdir', meaning:'Le Tout-Puissant capable de toute chose', when:'quand vous demandez une chose qui vous semble difficile', dua:'Yā Qādir, Tu es capable de toute chose : accorde-moi ce bien s’il est meilleur pour moi et facilite-le.' },
+    { ar:'الْمُقْتَدِرُ', translit:'Al-Muqtadir', meaning:'Le Parfaitement Puissant', when:'quand une situation vous paraît impossible ou hors de votre pouvoir', dua:'Yā Muqtadir, lorsque je ne vois aucune solution, ouvre-moi une voie par Ta puissance et Ta sagesse.' },
+    { ar:'الْمُقَدِّمُ', translit:'Al-Muqaddim', meaning:'Celui qui fait avancer', when:'quand vous demandez qu’une bonne chose soit facilitée et avancée', dua:'Yā Muqaddim, fais avancer dans ma vie ce qui me rapproche du bien et donne-moi le courage de saisir les bonnes occasions.' },
+    { ar:'الْمُؤَخِّرُ', translit:'Al-Mu’akhkhir', meaning:'Celui qui fait reculer', when:'quand vous demandez qu’une chose nuisible soit retardée ou éloignée', dua:'Yā Mu’akhkhir, éloigne ou retarde ce qui me serait nuisible et apprends-moi à accepter Ton décret.' },
+    { ar:'الْأَوَّلُ', translit:'Al-Awwal', meaning:'Le Premier', when:'quand vous commencez un projet, un voyage ou une nouvelle étape', dua:'Yā Awwal, bénis le commencement de cette nouvelle étape et fais que ses fondations soient bonnes.' },
+    { ar:'الْآخِرُ', translit:'Al-Âkhir', meaning:'Le Dernier', when:'quand vous demandez une bonne fin à une affaire', dua:'Yā Ākhir, accorde à cette affaire une bonne fin et fais que la fin de ma vie soit dans la foi.' },
+    { ar:'الظَّاهِرُ', translit:'Az-Zâhir', meaning:'Le Manifeste', when:'quand vous demandez de voir clairement la vérité et le bien', dua:'Yā Zāhir, rends-moi clairs les signes du bien et aide-moi à voir la vérité sans me laisser tromper par les apparences.' },
+    { ar:'الْبَاطِنُ', translit:'Al-Bâtin', meaning:'Le Caché', when:'quand vous souhaitez purifier vos intentions et votre vie intérieure', dua:'Yā Bātin, purifie mon cœur, mes intentions et ce que personne ne connaît de moi.' },
+    { ar:'الْوَالِي', translit:'Al-Wâlî', meaning:'Le Gouverneur', when:'quand vous demandez qu’Allah dirige vos affaires', dua:'Yā Wālī, prends en charge mes affaires, guide mes responsabilités et dirige-moi vers ce qui est juste.' },
+    { ar:'الْمُتَعَالِي', translit:'Al-Muta‘âlî', meaning:'Le Très-Élevé', when:'quand vous souhaitez vous élever au-dessus de ce qui vous éloigne d’Allah', dua:'Yā Muta‘ālī, élève mon cœur au-dessus de ce qui m’éloigne de Toi et augmente mon aspiration vers le bien.' },
+    { ar:'الْبَرُّ', translit:'Al-Barr', meaning:'La Source de toute bonté', when:'quand vous demandez bonté et aide pour faire le bien', dua:'Yā Barr, comble-moi de Ta bonté et aide-moi à être bon envers mes parents, ma famille et les autres.' },
+    { ar:'التَّوَّابُ', translit:'At-Tawwâb', meaning:'Celui qui accueille le repentir', when:'quand vous vous repentez et voulez revenir vers Allah', dua:'Yā Tawwāb, accepte mon repentir, aide-moi à réparer mes erreurs et donne-moi la force de ne pas y retourner.' },
+    { ar:'الْمُنْتَقِمُ', translit:'Al-Muntaqim', meaning:'Celui qui rétribue avec justice', when:'quand vous êtes victime d’une injustice et demandez une justice équitable', dua:'Yā Muntaqim, protège-moi de l’injustice, rends-moi justice avec équité et préserve-moi moi-même d’être injuste.' },
+    { ar:'الْعَفُوُّ', translit:'Al-‘Afuww', meaning:'Celui qui efface les fautes', when:'quand vous demandez qu’Allah efface vos fautes', dua:'Yā ‘Afuww, efface mes fautes, pardonne-moi complètement et aide-moi à pardonner aux autres.' },
+    { ar:'الرَّؤُوفُ', translit:'Ar-Ra’ûf', meaning:'Le Très Compatissant', when:'quand vous recherchez compassion et douceur', dua:'Yā Ra’ūf, traite-moi avec compassion dans ma faiblesse et mets de la douceur dans mes relations.' },
+    { ar:'مَالِكُ الْمُلْكِ', translit:'Mâlik-ul-Mulk', meaning:'Le Maître de la royauté', when:'quand vous demandez le bien dans vos biens, responsabilités ou possessions', dua:'Yā Mālik al-Mulk, bénis ce que Tu m’as confié, protège-moi de l’attachement excessif aux biens et aide-moi à les utiliser dans le bien.' },
+    { ar:'ذُو الْجَلَالِ وَالْإِكْرَامِ', translit:'Dhul-Jalâli wal-Ikrâm', meaning:'Le Détenteur de la majesté et de la générosité', when:'quand vous demandez honneur, générosité et bienfaits', dua:'Yā Dhul-Jalāli wal-Ikrām, honore-moi par Ton pardon, Ta générosité et une proximité qui améliore mon caractère.' },
+    { ar:'الْمُقْسِطُ', translit:'Al-Muqsit', meaning:'L’Équitable', when:'quand vous devez être équitable envers plusieurs personnes', dua:'Yā Muqsit, aide-moi à être équitable, à rendre les droits et à ne favoriser personne injustement.' },
+    { ar:'الْجَامِعُ', translit:'Al-Jâmi‘', meaning:'Celui qui rassemble', when:'quand vous demandez réunion, réconciliation ou unité dans le bien', dua:'Yā Jāmi‘, rassemble nos cœurs autour du bien, réconcilie ceux qui sont séparés et réunis ma famille dans l’obéissance.' },
+    { ar:'الْغَنِيُّ', translit:'Al-Ghaniyy', meaning:'Celui qui se suffit à Lui-même', when:'quand vous demandez le contentement et l’indépendance du cœur', dua:'Yā Ghaniyy, enrichis mon cœur par le contentement et libère-moi de la dépendance envers ce qui ne m’est pas nécessaire.' },
+    { ar:'الْمُغْنِي', translit:'Al-Mughnî', meaning:'Celui qui enrichit', when:'quand vous demandez une suffisance matérielle licite', dua:'Yā Mughnī, accorde-moi une suffisance licite, bénis mes ressources et rends-moi capable d’aider les autres.' },
+    { ar:'الْمَانِعُ', translit:'Al-Mâni‘', meaning:'Celui qui empêche', when:'quand vous demandez à être préservé d’un mal', dua:'Yā Māni‘, préserve-moi de ce qui nuit à ma foi, à ma santé et à ma vie, même si je le désire sans en connaître le mal.' },
+    { ar:'الضَّارُّ', translit:'Ad-Dârr', meaning:'Celui qui peut laisser atteindre l’épreuve', when:'quand vous traversez une épreuve et demandez protection et secours', dua:'Yā Dārr, protège-moi du mal des épreuves et fais que les difficultés deviennent pour moi une cause de rapprochement vers Toi.' },
+    { ar:'النَّافِعُ', translit:'An-Nâfi‘', meaning:'Celui qui accorde le bénéfice', when:'quand vous demandez ce qui vous sera réellement bénéfique', dua:'Yā Nāfi‘, accorde-moi une connaissance, des relations et des ressources réellement bénéfiques.' },
+    { ar:'النُّورُ', translit:'An-Nûr', meaning:'La Lumière', when:'quand vous recherchez lumière, clarté et guidance', dua:'Yā Nūr, illumine mon cœur, clarifie mon chemin et éloigne de moi la confusion.' },
+    { ar:'الْهَادِي', translit:'Al-Hâdî', meaning:'Le Guide', when:'quand vous avez besoin d’être guidé dans une décision ou dans votre foi', dua:'Yā Hādī, guide-moi vers le droit chemin, inspire-moi la bonne décision et maintiens-moi dans la droiture.' },
+    { ar:'الْبَدِيعُ', translit:'Al-Badî‘', meaning:'L’Incomparable Créateur', when:'quand vous cherchez une solution nouvelle à une difficulté', dua:'Yā Badī‘, ouvre-moi une solution nouvelle et bénéfique lorsque toutes les voies me semblent fermées.' },
+    { ar:'الْبَاقِي', translit:'Al-Bâqî', meaning:'L’Éternel, Celui qui demeure', when:'quand vous voulez attacher votre cœur à ce qui demeure', dua:'Yā Bāqī, attache mon cœur à ce qui demeure auprès de Toi et aide-moi à ne pas vivre uniquement pour ce qui disparaît.' },
+    { ar:'الْوَارِثُ', translit:'Al-Wârith', meaning:'L’Héritier', when:'quand vous pensez à ce que vous laisserez après vous', dua:'Yā Wārith, aide-moi à laisser après moi une foi, une connaissance et des œuvres qui continuent de faire du bien.' },
+    { ar:'الرَّشِيدُ', translit:'Ar-Rashîd', meaning:'Le Guide vers la droiture', when:'quand vous demandez droiture et discernement', dua:'Yā Rashīd, guide mes décisions, corrige mes erreurs de jugement et conduis-moi vers ce qui est droit.' },
+    { ar:'الصَّبُورُ', translit:'As-Sabûr', meaning:'Le Très Patient', when:'quand vous avez besoin de patience et de constance', dua:'Yā Sabūr, accorde-moi patience, constance et confiance lorsque l’attente ou l’épreuve se prolonge.' }
+  ];
+
+
+  const ASMA_EXTRA = [
+    {
+      ar:'الشَّافِي', translit:'Ash-Shāfī', meaning:'Celui qui guérit',
+      invoke:'lors d’une maladie, pour demander à Allah la guérison et le soulagement.',
+      dua:'Yā Shāfī, accorde la guérison, enlève le mal et donne une guérison complète.',
+      source:'Sahih al-Bukhari et Sahih Muslim — invocation : « Tu es Celui qui guérit ».'
+    },
+    {
+      ar:'الرَّبُّ', translit:'Ar-Rabb', meaning:'Le Seigneur',
+      invoke:'pour demander guidance, protection, subsistance ou secours à votre Seigneur.',
+      dua:'Yā Rabb, guide-moi, protège-moi et facilite-moi ce qui est bon.',
+      source:'Coran et Sunna — « Rabb » est employé de très nombreuses fois pour Allah.'
+    },
+    {
+      ar:'الْمَنَّانُ', translit:'Al-Mannān', meaning:'Celui qui accorde abondamment Ses bienfaits',
+      invoke:'pour demander un bienfait, une faveur ou remercier Allah pour Ses dons.',
+      dua:'Yā Mannān, accorde-moi de Tes bienfaits et mets-y une bénédiction durable.',
+      source:'Sunna — invocation prophétique rapportant l’appellation « Al-Mannān ».'
+    },
+    {
+      ar:'الْجَمِيلُ', translit:'Al-Jamīl', meaning:'Le Beau',
+      invoke:'pour demander l’embellissement du caractère et aimer la beauté sans orgueil.',
+      dua:'Yā Jamīl, embellis mon caractère, mes paroles et mes œuvres par ce qui Te plaît.',
+      source:'Sahih Muslim — « Allah est Beau et Il aime la beauté ».'
+    },
+    {
+      ar:'الطَّيِّبُ', translit:'At-Tayyib', meaning:'Le Bon, Le Pur',
+      invoke:'pour demander une subsistance, des paroles et des œuvres bonnes et licites.',
+      dua:'Yā Tayyib, accorde-moi ce qui est bon et pur et aide-moi à n’offrir que ce qui est bon.',
+      source:'Sahih Muslim — « Allah est Tayyib et n’accepte que ce qui est bon ».'
+    }
   ];
 
   function normalize(s){
@@ -1207,7 +1329,12 @@
     settingsView: document.getElementById('settingsView'),
     asmaView: document.getElementById('asmaView'),
     asmaGrid: document.getElementById('asmaGrid'),
+    asmaExtraGrid: document.getElementById('asmaExtraGrid'),
     asmaSearch: document.getElementById('asmaSearch'),
+    asmaMainTab: document.getElementById('asmaMainTab'),
+    asmaExtraTab: document.getElementById('asmaExtraTab'),
+    asmaMainPanel: document.getElementById('asmaMainPanel'),
+    asmaExtraPanel: document.getElementById('asmaExtraPanel'),
     languageSetting: document.getElementById('languageSetting'),
     vibrationSetting: document.getElementById('vibrationSetting'),
     arabicSizeSetting: document.getElementById('arabicSizeSetting'),
@@ -1228,7 +1355,7 @@
       chooseDhikr:'Choisir le dhikr', target:'Objectif', timerTitle:'Minuteur du dhikr', measureOne:'Mesurer une répétition', stopMeasure:'Arrêter la mesure', durationUnset:'Durée non réglée', durationLabel:'Durée : ', perRepeat:' / répétition', timerStart:'Démarrer le minuteur', timerStop:'Arrêter le minuteur', free:'Libre',
       myDhikrsTitle:'Mes dhikrs', myDhikrsSubtitle:'Ajoutez, modifiez ou supprimez vos dhikrs personnalisés.', addDhikrTitle:'Ajouter un dhikr', editDhikrTitle:'Modifier le dhikr', addThisDhikr:'Ajouter ce dhikr', saveChanges:'Enregistrer les modifications', cancelEdit:'Annuler la modification', availableDhikrs:'Dhikrs disponibles', edit:'Modifier', delete:'Supprimer',
       translitPlaceholder:'Translittération (ex. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Traduction (optionnel)',
-      asmaTitle:'Asma', asmaSubtitle:'Les 99 beaux noms d’Allah — Al-Asma al-Husna.', asmaSearchPlaceholder:'Rechercher un nom…', asmaSearchAria:'Rechercher parmi les 99 noms', asmaNoResults:'Aucun nom trouvé.', asmaDuaLabel:'Exemple d’invocation', settingsTitle:'Réglages', settingsSubtitle:'Personnalisez l’application selon vos préférences.', themeTitle:'Thème de l’application', themeHint:'Choisissez une ambiance visuelle. Le thème est mémorisé automatiquement.', themeDark:'Sombre', themeBlue:'Bleu', themeGreen:'Vert', themePurple:'Violet', themePink:'Rose', languageTitle:'Langue de l’interface', languageIntro:'Choisissez la langue des boutons, menus et messages de l’application.', languageLabel:'Langue', languageHint:'Le changement est appliqué immédiatement.', speechLanguageNote:'Dhikrs : reconnaissance en arabe. Commandes vocales : dites « Pause », « Reprends » ou « Remets à zéro ». Si Chrome les transcrit mal, les commandes arabes « توقف », « استمر » et « صفر » sont aussi reconnues.', comfortTitle:'Confort et affichage', vibrationLabel:'Vibration au comptage', vibrationHint:'Retour haptique léger sur mobile compatible.', arabicSizeLabel:'Taille du texte arabe', arabicSizeHint:'Ajuste uniquement le dhikr principal.', confirmResetLabel:'Confirmer les remises à zéro', confirmResetHint:'Évite les réinitialisations accidentelles.', dataTitle:'Données', dataText:'Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.',
+      asmaTitle:'Asma', asmaMainTab:'99 Names', asmaExtraTab:'Additional names', asmaMainTab:'99 Nomi', asmaExtraTab:'Nomi aggiuntivi', asmaMainTab:'99 Noms', asmaExtraTab:'Noms supplémentaires', asmaSubtitle:'Les 99 beaux noms d’Allah — Al-Asma al-Husna.', asmaGuidanceNote:'Les situations et invocations ci-dessous sont des suggestions liées au sens des Noms, et non des formules obligatoires ni des effets garantis.', asmaSearchPlaceholder:'Rechercher un nom…', asmaSearchAria:'Rechercher parmi les 99 noms', asmaNoResults:'Aucun nom trouvé.', asmaInvokeWhenLabel:'Invoquer ce nom', asmaDuaLabel:'Exemple d’invocation', asmaExtraTitle:'Autres noms attestés dans le Coran et la Sunna', asmaExtraNote:'Section séparée de la liste traditionnelle des 99. Les références indiquent le texte utilisé pour attester chaque appellation.', asmaSourceLabel:'Source', settingsTitle:'Réglages', settingsSubtitle:'Personnalisez l’application selon vos préférences.', themeTitle:'Thème de l’application', themeHint:'Choisissez une ambiance visuelle. Le thème est mémorisé automatiquement.', themeDark:'Sombre', themeBlue:'Bleu', themeGreen:'Vert', themePurple:'Violet', themePink:'Rose', languageTitle:'Langue de l’interface', languageIntro:'Choisissez la langue des boutons, menus et messages de l’application.', languageLabel:'Langue', languageHint:'Le changement est appliqué immédiatement.', speechLanguageNote:'Dhikrs : reconnaissance en arabe. Commandes vocales : dites « Pause », « Reprends » ou « Remets à zéro ». Si Chrome les transcrit mal, les commandes arabes « توقف », « استمر » et « صفر » sont aussi reconnues.', comfortTitle:'Confort et affichage', vibrationLabel:'Vibration au comptage', vibrationHint:'Retour haptique léger sur mobile compatible.', arabicSizeLabel:'Taille du texte arabe', arabicSizeHint:'Ajuste uniquement le dhikr principal.', confirmResetLabel:'Confirmer les remises à zéro', confirmResetHint:'Évite les réinitialisations accidentelles.', dataTitle:'Données', dataText:'Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.',
       confirmReset:'Remettre le compteur à zéro ?', resetDone:'Compteur de ce dhikr remis à zéro', targetReached:'objectif atteint', heard:'Entendu', notRecognized:'Non reconnu', phraseNotRecognized:'Phrase non reconnue', sayDhikrMeasure:'Dites le dhikr, je mesure le temps', durationSet:'Durée réglée à ', timerStarted:'Minuteur démarré', timerStopped:'Minuteur arrêté',
       deleteConfirm:n=>'Supprimer « '+n+' » ?', deleted:n=>'« '+n+' » supprimé.', duplicate:'Un dhikr avec cette translittération existe déjà.', modified:n=>'« '+n+' » modifié.', added:n=>'« '+n+' » ajouté à la liste des dhikrs.', invalidTranslit:'Merci d’indiquer une translittération valide.', switched:(n,c)=>'Dhikr changé pour '+n+', compteur '+c,
       micDenied:'Accès au micro refusé par le navigateur', micDeniedShort:'Accès au micro refusé', micPermission:'Autorisez le microphone pour activer la reconnaissance vocale', micPermissionError:'Impossible d’obtenir l’autorisation du microphone', noMic:'Aucun micro détecté', networkRetry:'Micro actif — problème réseau, nouvelle tentative', micStartError:'Impossible de démarrer le micro', unknownError:'erreur inconnue', safariSpeechUnavailable:'Safari autorise le microphone, mais la reconnaissance vocale Web n’est pas disponible dans ce mode. Essayez d’ouvrir Tasbih+ directement dans Safari.', speechUnsupported:"La reconnaissance vocale n'est pas prise en charge par ce navigateur. Le cercle et les boutons restent utilisables au toucher. Essayez Chrome, Edge ou une version récente de Safari."
@@ -1240,7 +1367,7 @@
       chooseDhikr:'Scegli il dhikr', target:'Obiettivo', timerTitle:'Timer del dhikr', measureOne:'Misura una ripetizione', stopMeasure:'Ferma misurazione', durationUnset:'Durata non impostata', durationLabel:'Durata: ', perRepeat:' / ripetizione', timerStart:'Avvia timer', timerStop:'Ferma timer', free:'Libero',
       myDhikrsTitle:'I miei dhikr', myDhikrsSubtitle:'Aggiungi, modifica o elimina i tuoi dhikr personalizzati.', addDhikrTitle:'Aggiungi un dhikr', editDhikrTitle:'Modifica il dhikr', addThisDhikr:'Aggiungi questo dhikr', saveChanges:'Salva modifiche', cancelEdit:'Annulla modifica', availableDhikrs:'Dhikr disponibili', edit:'Modifica', delete:'Elimina',
       translitPlaceholder:'Traslitterazione (es. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Traduzione (opzionale)',
-      asmaTitle:'Asma', asmaSubtitle:'I 99 bei nomi di Allah — Al-Asma al-Husna.', asmaSearchPlaceholder:'Cerca un nome…', asmaSearchAria:'Cerca tra i 99 nomi', asmaNoResults:'Nessun nome trovato.', asmaDuaLabel:'Esempio di invocazione', settingsTitle:'Impostazioni', themeTitle:'Tema dell’app', themeHint:'Scegli l’aspetto dell’app. Il tema viene salvato automaticamente.', themeDark:'Scuro', themeBlue:'Blu', themeGreen:'Verde', themePurple:'Viola', themePink:'Rosa', settingsSubtitle:'Personalizza l’app secondo le tue preferenze.', languageTitle:'Lingua dell’interfaccia', languageIntro:'Scegli la lingua di pulsanti, menu e messaggi dell’app.', languageLabel:'Lingua', languageHint:'La modifica viene applicata immediatamente.', speechLanguageNote:'Dhikr: riconoscimento in arabo. Comandi vocali: dì « Pausa », « Riprendi » o « Azzera ». Se Chrome li trascrive male, funzionano anche « توقف », « استمر » e « صفر ».', comfortTitle:'Comfort e visualizzazione', vibrationLabel:'Vibrazione al conteggio', vibrationHint:'Leggero feedback aptico sui dispositivi compatibili.', arabicSizeLabel:'Dimensione del testo arabo', arabicSizeHint:'Regola solo il dhikr principale.', confirmResetLabel:'Conferma azzeramento', confirmResetHint:'Evita azzeramenti accidentali.', dataTitle:'Dati', dataText:'Dhikr personalizzati, contatori e impostazioni vengono salvati localmente nel browser.',
+      asmaTitle:'Asma', asmaSubtitle:'I 99 bei nomi di Allah — Al-Asma al-Husna.', asmaGuidanceNote:'Le situazioni e le invocazioni seguenti sono suggerimenti legati al significato dei Nomi, non formule obbligatorie né effetti garantiti.', asmaSearchPlaceholder:'Cerca un nome…', asmaSearchAria:'Cerca tra i 99 nomi', asmaNoResults:'Nessun nome trovato.', asmaInvokeWhenLabel:'Invocare questo nome', asmaDuaLabel:'Esempio di invocazione', asmaExtraTitle:'Altri nomi attestati nel Corano e nella Sunna', asmaExtraNote:'Sezione separata dalla lista tradizionale dei 99 nomi.', asmaSourceLabel:'Fonte', settingsTitle:'Impostazioni', themeTitle:'Tema dell’app', themeHint:'Scegli l’aspetto dell’app. Il tema viene salvato automaticamente.', themeDark:'Scuro', themeBlue:'Blu', themeGreen:'Verde', themePurple:'Viola', themePink:'Rosa', settingsSubtitle:'Personalizza l’app secondo le tue preferenze.', languageTitle:'Lingua dell’interfaccia', languageIntro:'Scegli la lingua di pulsanti, menu e messaggi dell’app.', languageLabel:'Lingua', languageHint:'La modifica viene applicata immediatamente.', speechLanguageNote:'Dhikr: riconoscimento in arabo. Comandi vocali: dì « Pausa », « Riprendi » o « Azzera ». Se Chrome li trascrive male, funzionano anche « توقف », « استمر » e « صفر ».', comfortTitle:'Comfort e visualizzazione', vibrationLabel:'Vibrazione al conteggio', vibrationHint:'Leggero feedback aptico sui dispositivi compatibili.', arabicSizeLabel:'Dimensione del testo arabo', arabicSizeHint:'Regola solo il dhikr principale.', confirmResetLabel:'Conferma azzeramento', confirmResetHint:'Evita azzeramenti accidentali.', dataTitle:'Dati', dataText:'Dhikr personalizzati, contatori e impostazioni vengono salvati localmente nel browser.',
       confirmReset:'Azzerare il contatore?', resetDone:'Contatore di questo dhikr azzerato', targetReached:'obiettivo raggiunto', heard:'Riconosciuto', notRecognized:'Non riconosciuto', phraseNotRecognized:'Frase non riconosciuta', sayDhikrMeasure:'Recita il dhikr, misuro il tempo', durationSet:'Durata impostata a ', timerStarted:'Timer avviato', timerStopped:'Timer fermato',
       deleteConfirm:n=>'Eliminare « '+n+' »?', deleted:n=>'« '+n+' » eliminato.', duplicate:'Esiste già un dhikr con questa traslitterazione.', modified:n=>'« '+n+' » modificato.', added:n=>'« '+n+' » aggiunto alla lista dei dhikr.', invalidTranslit:'Inserisci una traslitterazione valida.', switched:(n,c)=>'Dhikr cambiato in '+n+', contatore '+c,
       micDenied:'Accesso al microfono negato dal browser', micDeniedShort:'Accesso al microfono negato', micPermission:'Autorizza il microfono per attivare il riconoscimento vocale', micPermissionError:'Impossibile ottenere il permesso del microfono', noMic:'Nessun microfono rilevato', networkRetry:'Microfono attivo — problema di rete, nuovo tentativo', micStartError:'Impossibile avviare il microfono', unknownError:'errore sconosciuto', safariSpeechUnavailable:'Safari autorizza il microfono, ma il riconoscimento vocale Web non è disponibile in questa modalità. Prova ad aprire Tasbih+ direttamente in Safari.', speechUnsupported:'Il riconoscimento vocale non è supportato da questo browser. Il contatore e i pulsanti restano utilizzabili al tocco. Prova Chrome, Edge o una versione recente di Safari.'
@@ -1252,7 +1379,7 @@
       chooseDhikr:'Choose dhikr', target:'Target', timerTitle:'Dhikr timer', measureOne:'Measure one repetition', stopMeasure:'Stop measurement', durationUnset:'Duration not set', durationLabel:'Duration: ', perRepeat:' / repetition', timerStart:'Start timer', timerStop:'Stop timer', free:'Free',
       myDhikrsTitle:'My dhikrs', myDhikrsSubtitle:'Add, edit or delete your custom dhikrs.', addDhikrTitle:'Add a dhikr', editDhikrTitle:'Edit dhikr', addThisDhikr:'Add this dhikr', saveChanges:'Save changes', cancelEdit:'Cancel edit', availableDhikrs:'Available dhikrs', edit:'Edit', delete:'Delete',
       translitPlaceholder:'Transliteration (e.g. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Translation (optional)',
-      asmaTitle:'Asma', asmaSubtitle:'The 99 beautiful names of Allah — Al-Asma al-Husna.', asmaSearchPlaceholder:'Search a name…', asmaSearchAria:'Search the 99 names', asmaNoResults:'No name found.', asmaDuaLabel:'Example invocation', settingsTitle:'Settings', themeTitle:'App theme', themeHint:'Choose the app appearance. Your theme is saved automatically.', themeDark:'Dark', themeBlue:'Blue', themeGreen:'Green', themePurple:'Purple', themePink:'Pink', settingsSubtitle:'Personalize the app to your preferences.', languageTitle:'Interface language', languageIntro:'Choose the language used for buttons, menus and app messages.', languageLabel:'Language', languageHint:'The change is applied immediately.', speechLanguageNote:'Dhikrs are recognized in Arabic. Voice commands also support English, with Arabic fallback commands « توقف », « استمر » and « صفر ».', comfortTitle:'Comfort and display', vibrationLabel:'Vibrate when counting', vibrationHint:'Light haptic feedback on compatible mobile devices.', arabicSizeLabel:'Arabic text size', arabicSizeHint:'Adjusts only the main dhikr text.', confirmResetLabel:'Confirm resets', confirmResetHint:'Prevents accidental resets.', dataTitle:'Data', dataText:'Custom dhikrs, counters and settings are saved locally in your browser.',
+      asmaTitle:'Asma', asmaSubtitle:'The 99 beautiful names of Allah — Al-Asma al-Husna.', asmaGuidanceNote:'The situations and invocations below are suggestions related to the meanings of the Names, not required formulas or guaranteed effects.', asmaSearchPlaceholder:'Search a name…', asmaSearchAria:'Search the 99 names', asmaNoResults:'No name found.', asmaInvokeWhenLabel:'Invoke this name', asmaDuaLabel:'Example invocation', asmaExtraTitle:'Other names attested in the Quran and Sunnah', asmaExtraNote:'A separate section from the traditional list of 99 names.', asmaSourceLabel:'Source', settingsTitle:'Settings', themeTitle:'App theme', themeHint:'Choose the app appearance. Your theme is saved automatically.', themeDark:'Dark', themeBlue:'Blue', themeGreen:'Green', themePurple:'Purple', themePink:'Pink', settingsSubtitle:'Personalize the app to your preferences.', languageTitle:'Interface language', languageIntro:'Choose the language used for buttons, menus and app messages.', languageLabel:'Language', languageHint:'The change is applied immediately.', speechLanguageNote:'Dhikrs are recognized in Arabic. Voice commands also support English, with Arabic fallback commands « توقف », « استمر » and « صفر ».', comfortTitle:'Comfort and display', vibrationLabel:'Vibrate when counting', vibrationHint:'Light haptic feedback on compatible mobile devices.', arabicSizeLabel:'Arabic text size', arabicSizeHint:'Adjusts only the main dhikr text.', confirmResetLabel:'Confirm resets', confirmResetHint:'Prevents accidental resets.', dataTitle:'Data', dataText:'Custom dhikrs, counters and settings are saved locally in your browser.',
       confirmReset:'Reset the counter to zero?', resetDone:'This dhikr counter was reset', targetReached:'target reached', heard:'Heard', notRecognized:'Not recognized', phraseNotRecognized:'Phrase not recognized', sayDhikrMeasure:'Say the dhikr, I am measuring the time', durationSet:'Duration set to ', timerStarted:'Timer started', timerStopped:'Timer stopped',
       deleteConfirm:n=>'Delete “'+n+'”?', deleted:n=>'“'+n+'” deleted.', duplicate:'A dhikr with this transliteration already exists.', modified:n=>'“'+n+'” updated.', added:n=>'“'+n+'” added to the dhikr list.', invalidTranslit:'Please enter a valid transliteration.', switched:(n,c)=>'Dhikr changed to '+n+', counter '+c,
       micDenied:'Microphone access denied by the browser', micDeniedShort:'Microphone access denied', micPermission:'Allow microphone access to enable voice recognition', micPermissionError:'Unable to obtain microphone permission', noMic:'No microphone detected', networkRetry:'Microphone active — network problem, retrying', micStartError:'Unable to start the microphone', unknownError:'unknown error', safariSpeechUnavailable:'Safari allows microphone access, but Web Speech recognition is not available in this mode. Try opening Tasbih+ directly in Safari.', speechUnsupported:'Voice recognition is not supported by this browser. The counter and buttons can still be used by touch. Try Chrome, Edge, or a recent version of Safari.'
@@ -1327,7 +1454,8 @@
         if(!query) return true;
         return normalizeAsmaSearch(item.ar).includes(query) ||
                normalizeAsmaSearch(item.translit).includes(query) ||
-               normalizeAsmaSearch(item.meaning).includes(query);
+               normalizeAsmaSearch(item.meaning).includes(query) ||
+               normalizeAsmaSearch(item.when).includes(query);
       });
 
     if(!matches.length){
@@ -1360,6 +1488,15 @@
       meaning.className = 'asma-meaning';
       meaning.textContent = item.meaning;
 
+      const invoke = document.createElement('p');
+      invoke.className = 'asma-invoke';
+      const invokeLabel = document.createElement('span');
+      invokeLabel.className = 'asma-invoke-label';
+      invokeLabel.textContent = t('asmaInvokeWhenLabel');
+      const invokeText = document.createElement('span');
+      invokeText.textContent = item.when;
+      invoke.append(invokeLabel, invokeText);
+
       const dua = document.createElement('p');
       dua.className = 'asma-dua';
       const duaLabel = document.createElement('span');
@@ -1369,7 +1506,7 @@
       duaText.textContent = item.dua;
       dua.append(duaLabel, duaText);
 
-      card.append(number, ar, translit, meaning, dua);
+      card.append(number, ar, translit, meaning, invoke, dua);
       el.asmaGrid.appendChild(card);
     });
   }
@@ -1377,6 +1514,82 @@
   if(el.asmaSearch){
     el.asmaSearch.addEventListener('input', renderAsma);
   }
+
+
+  function renderAsmaExtra(){
+    if(!el.asmaExtraGrid) return;
+    el.asmaExtraGrid.innerHTML = '';
+    ASMA_EXTRA.forEach((item, index) => {
+      const card = document.createElement('article');
+      card.className = 'asma-card';
+
+      const number = document.createElement('span');
+      number.className = 'asma-number';
+      number.textContent = '+';
+
+      const ar = document.createElement('p');
+      ar.className = 'asma-ar';
+      ar.lang = 'ar';
+      ar.dir = 'rtl';
+      ar.textContent = item.ar;
+
+      const translit = document.createElement('p');
+      translit.className = 'asma-translit';
+      translit.textContent = item.translit;
+
+      const meaning = document.createElement('p');
+      meaning.className = 'asma-meaning';
+      meaning.textContent = item.meaning;
+
+      const invoke = document.createElement('p');
+      invoke.className = 'asma-invoke';
+      const invokeLabel = document.createElement('span');
+      invokeLabel.className = 'asma-invoke-label';
+      invokeLabel.textContent = t('asmaInvokeWhenLabel');
+      const invokeText = document.createElement('span');
+      invokeText.textContent = item.invoke;
+      invoke.append(invokeLabel, invokeText);
+
+      const dua = document.createElement('p');
+      dua.className = 'asma-dua';
+      const duaLabel = document.createElement('span');
+      duaLabel.className = 'asma-dua-label';
+      duaLabel.textContent = t('asmaDuaLabel');
+      const duaText = document.createElement('span');
+      duaText.textContent = item.dua;
+      dua.append(duaLabel, duaText);
+
+      const source = document.createElement('p');
+      source.className = 'asma-source';
+      source.textContent = t('asmaSourceLabel') + ' : ' + item.source;
+
+      card.append(number, ar, translit, meaning, invoke, dua, source);
+      el.asmaExtraGrid.appendChild(card);
+    });
+  }
+
+
+  function setAsmaSection(section){
+    const extra = section === 'extra';
+    if(el.asmaMainPanel) el.asmaMainPanel.hidden = extra;
+    if(el.asmaExtraPanel) el.asmaExtraPanel.hidden = !extra;
+    if(el.asmaMainTab){
+      el.asmaMainTab.classList.toggle('active', !extra);
+      el.asmaMainTab.setAttribute('aria-selected', String(!extra));
+    }
+    if(el.asmaExtraTab){
+      el.asmaExtraTab.classList.toggle('active', extra);
+      el.asmaExtraTab.setAttribute('aria-selected', String(extra));
+    }
+    if(el.asmaSearch){
+      el.asmaSearch.hidden = extra;
+      const toolbar = el.asmaSearch.closest('.asma-toolbar');
+      if(toolbar) toolbar.hidden = extra;
+    }
+  }
+
+  if(el.asmaMainTab) el.asmaMainTab.addEventListener('click', () => setAsmaSection('main'));
+  if(el.asmaExtraTab) el.asmaExtraTab.addEventListener('click', () => setAsmaSection('extra'));
 
   function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }catch(e){} }
   function applySettings(){
@@ -1402,7 +1615,7 @@
     document.querySelectorAll('.theme-choice').forEach(btn=>btn.setAttribute('aria-pressed', btn.dataset.theme===chosen ? 'true' : 'false'));
   }
   document.querySelectorAll('.theme-choice').forEach(btn=>btn.addEventListener('click',()=>{ appSettings.theme=btn.dataset.theme; applyTheme(appSettings.theme); saveSettings(); }));
-  el.languageSetting.addEventListener('change',()=>{ appSettings.language=el.languageSetting.value; saveSettings(); applyLanguage(); renderAsma(); });
+  el.languageSetting.addEventListener('change',()=>{ appSettings.language=el.languageSetting.value; saveSettings(); applyLanguage(); renderAsma(); renderAsmaExtra(); });
   el.vibrationSetting.addEventListener('change',()=>{ appSettings.vibration=el.vibrationSetting.checked; saveSettings(); });
   el.arabicSizeSetting.addEventListener('input',()=>{ appSettings.arabicSize=Number(el.arabicSizeSetting.value); applySettings(); saveSettings(); });
   el.confirmResetSetting.addEventListener('change',()=>{ appSettings.confirmReset=el.confirmResetSetting.checked; saveSettings(); });
@@ -2272,6 +2485,8 @@
   loadPhraseCounts();
   loadSettings();
   renderAsma();
+  renderAsmaExtra();
+  setAsmaSection('main');
   renderPhraseChoices();
   renderTargetChoices();
   setPhrase(0, false);
