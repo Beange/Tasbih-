@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v49-theme-persistant';
+const CACHE_NAME = 'tasbih-plus-v51-titres-fr';
 const APP_SHELL = [
   './',
   './index.html',
