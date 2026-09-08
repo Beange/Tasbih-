@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v44-settings-top';
+const CACHE_NAME = 'tasbih-plus-v49-theme-persistant';
 const APP_SHELL = [
   './',
   './index.html',
