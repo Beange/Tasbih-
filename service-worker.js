@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v51-titres-fr';
+const CACHE_NAME = 'tasbih-plus-v52-sans-fleches-dhikrs';
 const APP_SHELL = [
   './',
   './index.html',

@@ -3254,30 +3254,6 @@
         card.appendChild(ar);
       }
 
-      const reorderActions = document.createElement('div');
-      reorderActions.className = 'dhikr-reorder-actions';
-
-      const moveUpBtn = document.createElement('button');
-      moveUpBtn.type = 'button';
-      moveUpBtn.className = 'choice-btn dhikr-reorder-btn';
-      moveUpBtn.textContent = '↑';
-      moveUpBtn.title = dhikrReorderText('up', label);
-      moveUpBtn.setAttribute('aria-label', dhikrReorderText('up', label));
-      moveUpBtn.disabled = orderIndex === 0;
-      moveUpBtn.addEventListener('click', () => moveDhikrInDisplayOrder(p.key, -1));
-
-      const moveDownBtn = document.createElement('button');
-      moveDownBtn.type = 'button';
-      moveDownBtn.className = 'choice-btn dhikr-reorder-btn';
-      moveDownBtn.textContent = '↓';
-      moveDownBtn.title = dhikrReorderText('down', label);
-      moveDownBtn.setAttribute('aria-label', dhikrReorderText('down', label));
-      moveDownBtn.disabled = orderIndex === orderedEntries.length - 1;
-      moveDownBtn.addEventListener('click', () => moveDhikrInDisplayOrder(p.key, 1));
-
-      reorderActions.append(moveUpBtn, moveDownBtn);
-      card.appendChild(reorderActions);
-
       if(i >= BUILTIN_COUNT){
         const actions = document.createElement('div');
         actions.className = 'manage-actions';
