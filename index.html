@@ -2316,25 +2316,7 @@
       meaning.className = 'asma-meaning';
       meaning.textContent = item.meaning;
 
-      const invoke = document.createElement('p');
-      invoke.className = 'asma-invoke';
-      const invokeLabel = document.createElement('span');
-      invokeLabel.className = 'asma-invoke-label';
-      invokeLabel.textContent = t('asmaInvokeWhenLabel');
-      const invokeText = document.createElement('span');
-      invokeText.textContent = item.when;
-      invoke.append(invokeLabel, invokeText);
-
-      const dua = document.createElement('p');
-      dua.className = 'asma-dua';
-      const duaLabel = document.createElement('span');
-      duaLabel.className = 'asma-dua-label';
-      duaLabel.textContent = t('asmaDuaLabel');
-      const duaText = document.createElement('span');
-      duaText.textContent = item.dua;
-      dua.append(duaLabel, duaText);
-
-      card.append(number, ar, translit, meaning, invoke, dua);
+      card.append(number, ar, translit, meaning);
       el.asmaGrid.appendChild(card);
     });
   }
@@ -2369,29 +2351,11 @@
       meaning.className = 'asma-meaning';
       meaning.textContent = item.meaning;
 
-      const invoke = document.createElement('p');
-      invoke.className = 'asma-invoke';
-      const invokeLabel = document.createElement('span');
-      invokeLabel.className = 'asma-invoke-label';
-      invokeLabel.textContent = t('asmaInvokeWhenLabel');
-      const invokeText = document.createElement('span');
-      invokeText.textContent = item.invoke;
-      invoke.append(invokeLabel, invokeText);
-
-      const dua = document.createElement('p');
-      dua.className = 'asma-dua';
-      const duaLabel = document.createElement('span');
-      duaLabel.className = 'asma-dua-label';
-      duaLabel.textContent = t('asmaDuaLabel');
-      const duaText = document.createElement('span');
-      duaText.textContent = item.dua;
-      dua.append(duaLabel, duaText);
-
       const source = document.createElement('p');
       source.className = 'asma-source';
       source.textContent = t('asmaSourceLabel') + ' : ' + item.source;
 
-      card.append(number, ar, translit, meaning, invoke, dua, source);
+      card.append(number, ar, translit, meaning, source);
       el.asmaExtraGrid.appendChild(card);
     });
   }

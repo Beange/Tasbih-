@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v52-sans-fleches-dhikrs';
+const CACHE_NAME = 'tasbih-plus-v54-asma-simple';
 const APP_SHELL = [
   './',
   './index.html',
