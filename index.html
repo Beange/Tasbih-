@@ -1022,6 +1022,11 @@
   @media(max-width:430px){.quran-reciter-field{align-items:stretch;flex-direction:column}.quran-reciter-select{max-width:none;width:100%}}
 
   .quran-audio-control:disabled{opacity:.3;cursor:not-allowed}
+  .quran-offline-tools{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin:.65rem 0 .15rem}
+  .quran-offline-btn{border:1px solid rgba(156,59,84,.18);border-radius:12px;background:var(--card);color:var(--text);padding:.55rem .7rem;font:800 .76rem Inter,sans-serif;cursor:pointer}
+  .quran-offline-btn:disabled{opacity:.45;cursor:wait}
+  .quran-offline-state{font-size:.72rem;color:var(--text-muted);flex:1;min-width:10rem}
+
 
   /* v30 — typographie des sourates */
   .quran-card{position:relative;padding:1rem .9rem .85rem;text-align:center}
@@ -1577,6 +1582,10 @@
                 <option value="hadi.toure">Mohamed Hadi Touré</option>
               </select>
             </label>
+            <div class="quran-offline-tools">
+              <button id="quranOfflineDownloadBtn" type="button" class="quran-offline-btn">⬇ Hors ligne</button>
+              <span id="quranOfflineState" class="quran-offline-state">Téléchargez les 114 sourates du récitateur choisi.</span>
+            </div>
             <div class="quran-audio-status">
               <strong id="quranAudioStatus" data-i18n="quranAudioReady">Prêt à écouter</strong>
               <span id="quranAudioProgress">—</span>
@@ -2136,6 +2145,8 @@
     quranAudioProgress: document.getElementById('quranAudioProgress'),
     quranAudioTrackFill: document.getElementById('quranAudioTrackFill'),
     quranReciterSelect: document.getElementById('quranReciterSelect'),
+    quranOfflineDownloadBtn: document.getElementById('quranOfflineDownloadBtn'),
+    quranOfflineState: document.getElementById('quranOfflineState'),
     mediterView: document.getElementById('mediterView'),
     mediterList: document.getElementById('mediterList'),
     mediterSearch: document.getElementById('mediterSearch'),
@@ -2316,7 +2327,25 @@
       meaning.className = 'asma-meaning';
       meaning.textContent = item.meaning;
 
-      card.append(number, ar, translit, meaning);
+      const invoke = document.createElement('p');
+      invoke.className = 'asma-invoke';
+      const invokeLabel = document.createElement('span');
+      invokeLabel.className = 'asma-invoke-label';
+      invokeLabel.textContent = t('asmaInvokeWhenLabel');
+      const invokeText = document.createElement('span');
+      invokeText.textContent = item.when;
+      invoke.append(invokeLabel, invokeText);
+
+      const dua = document.createElement('p');
+      dua.className = 'asma-dua';
+      const duaLabel = document.createElement('span');
+      duaLabel.className = 'asma-dua-label';
+      duaLabel.textContent = t('asmaDuaLabel');
+      const duaText = document.createElement('span');
+      duaText.textContent = item.dua;
+      dua.append(duaLabel, duaText);
+
+      card.append(number, ar, translit, meaning, invoke, dua);
       el.asmaGrid.appendChild(card);
     });
   }
@@ -2351,11 +2380,29 @@
       meaning.className = 'asma-meaning';
       meaning.textContent = item.meaning;
 
+      const invoke = document.createElement('p');
+      invoke.className = 'asma-invoke';
+      const invokeLabel = document.createElement('span');
+      invokeLabel.className = 'asma-invoke-label';
+      invokeLabel.textContent = t('asmaInvokeWhenLabel');
+      const invokeText = document.createElement('span');
+      invokeText.textContent = item.invoke;
+      invoke.append(invokeLabel, invokeText);
+
+      const dua = document.createElement('p');
+      dua.className = 'asma-dua';
+      const duaLabel = document.createElement('span');
+      duaLabel.className = 'asma-dua-label';
+      duaLabel.textContent = t('asmaDuaLabel');
+      const duaText = document.createElement('span');
+      duaText.textContent = item.dua;
+      dua.append(duaLabel, duaText);
+
       const source = document.createElement('p');
       source.className = 'asma-source';
       source.textContent = t('asmaSourceLabel') + ' : ' + item.source;
 
-      card.append(number, ar, translit, meaning, source);
+      card.append(number, ar, translit, meaning, invoke, dua, source);
       el.asmaExtraGrid.appendChild(card);
     });
   }
@@ -2459,7 +2506,7 @@
   }
   const QURAN_RECITER_KEY='tasbih-plus-quran-reciter';
   const QURAN_RECITERS={
-    'ar.alafasy':{name:'Mishary Rashid Alafasy',bitrate:128},
+    'ar.alafasy':{name:'Mishary Rashid Alafasy',wholeSurah:true,offline:true,base:'https://server8.mp3quran.net/afs/'},
     'ar.husary':{name:'Mahmoud Khalil Al-Husary',bitrate:128},
     'ar.minshawi':{name:'Mohamed Siddiq Al-Minshawi',bitrate:128},
     'ar.sudais':{name:'Abdul Rahman Al-Sudais',bitrate:192},
@@ -2469,7 +2516,7 @@
     'ar.muhammadayoub':{name:'Muhammad Ayyoub',bitrate:128},
     'ar.hudhaify':{name:'Ali Al-Hudhaify',bitrate:128},
     'ar.muhammadjibreel':{name:'Muhammad Jibreel',bitrate:128},
-    'hadi.toure':{name:'Mohamed Hadi Touré',wholeSurah:true}
+    'hadi.toure':{name:'Mohamed Hadi Touré',wholeSurah:true,offline:true,base:'https://ia801908.us.archive.org/1/items/hadi-turi/'}
   };
   function getQuranReciter(){
     const saved=localStorage.getItem(QURAN_RECITER_KEY);
@@ -2485,6 +2532,7 @@
       localStorage.setItem(QURAN_RECITER_KEY,el.quranReciterSelect.value);
       stopQuranAudio();
       updateReciterControls();
+      refreshOfflineState();
     });
   }
 
@@ -2497,6 +2545,65 @@
     if(el.quranNextAyahBtn) el.quranNextAyahBtn.disabled=whole;
   }
   updateReciterControls();
+
+  const QURAN_AUDIO_CACHE='tasbih-plus-quran-audio-v1';
+  function quranWholeSurahUrl(reciterId,surah){
+    const r=QURAN_RECITERS[reciterId];
+    if(!r?.wholeSurah||!r.base)return null;
+    return r.base+String(surah).padStart(3,'0')+'.mp3';
+  }
+  async function countOfflineSurahs(reciterId){
+    if(!('caches' in window))return 0;
+    const cache=await caches.open(QURAN_AUDIO_CACHE);
+    let count=0;
+    for(let n=1;n<=114;n++){
+      const url=quranWholeSurahUrl(reciterId,n);
+      if(url && await cache.match(url))count++;
+    }
+    return count;
+  }
+  async function refreshOfflineState(){
+    if(!el.quranOfflineDownloadBtn||!el.quranOfflineState)return;
+    const id=getQuranReciter(), r=QURAN_RECITERS[id];
+    if(!r?.offline){
+      el.quranOfflineDownloadBtn.hidden=true;
+      el.quranOfflineState.textContent='Ce récitateur reste en lecture Internet.';
+      return;
+    }
+    el.quranOfflineDownloadBtn.hidden=false;
+    try{
+      const count=await countOfflineSurahs(id);
+      el.quranOfflineState.textContent=count===114?'✓ 114/114 sourates disponibles hors connexion':(count+' / 114 sourates hors connexion');
+      el.quranOfflineDownloadBtn.textContent=count===114?'↻ Retélécharger':'⬇ Télécharger hors ligne';
+    }catch(e){
+      el.quranOfflineState.textContent='Stockage hors ligne indisponible.';
+    }
+  }
+  async function downloadSelectedReciterOffline(){
+    const id=getQuranReciter(), r=QURAN_RECITERS[id];
+    if(!r?.offline||!('caches' in window))return;
+    const btn=el.quranOfflineDownloadBtn, state=el.quranOfflineState;
+    btn.disabled=true;
+    const cache=await caches.open(QURAN_AUDIO_CACHE);
+    let done=0, failed=0;
+    for(let n=1;n<=114;n++){
+      const url=quranWholeSurahUrl(id,n);
+      try{
+        const existing=await cache.match(url);
+        if(!existing){
+          const res=await fetch(url,{mode:'no-cors',cache:'no-store'});
+          await cache.put(url,res.clone());
+        }
+        done++;
+      }catch(e){failed++;}
+      state.textContent='Téléchargement '+done+' / 114'+(failed?' — '+failed+' erreur(s)':'');
+    }
+    btn.disabled=false;
+    await refreshOfflineState();
+    if(failed) state.textContent+=' — relancez pour compléter les fichiers manquants.';
+  }
+  if(el.quranOfflineDownloadBtn)el.quranOfflineDownloadBtn.addEventListener('click',downloadSelectedReciterOffline);
+  refreshOfflineState();
 
   let quranPlayingSurah=null;
   let quranPlayingAyahIndex=0;
@@ -2520,11 +2627,18 @@
     quranCurrentPlaying=null;quranPlayingSurah=null;quranPlayingAyahIndex=0;quranAudioPaused=false;
     updateQuranPlayerUI('ready');
   }
+  async function playNextQuranSurah(surah){
+    const next=Number(surah)+1;
+    if(next>114){stopQuranAudio();return;}
+    stopQuranAudio();
+    await openQuranSurah(next);
+    playSurahAyah(next,0);
+  }
   function playSurahAyah(surah,index){
     const info=quranSurahInfo(surah);
     if(!info)return;
     if(index<0)index=0;
-    if(index>=info.verses){stopQuranAudio();return;}
+    if(index>=info.verses){playNextQuranSurah(surah);return;}
     if(quranAudio){quranAudio.pause();quranAudio=null;}
     clearQuranPlayingRow();
     quranPlayingSurah=surah;quranPlayingAyahIndex=index;quranAudioPaused=false;
@@ -2535,8 +2649,8 @@
     if(reciter.wholeSurah){
       clearQuranPlayingRow();
       quranPlayingSurah=surah; quranPlayingAyahIndex=0; quranAudioPaused=false;
-      const surahFile=String(surah).padStart(3,'0')+'.mp3';
-      quranAudio=new Audio('https://ia801908.us.archive.org/1/items/hadi-turi/'+surahFile);
+      const audioUrl=quranWholeSurahUrl(reciterId,surah);
+      quranAudio=new Audio(audioUrl);
       quranAudio.addEventListener('timeupdate',()=>{
         if(!quranAudio||!Number.isFinite(quranAudio.duration)||!el.quranAudioTrackFill)return;
         el.quranAudioTrackFill.style.width=((quranAudio.currentTime/quranAudio.duration)*100)+'%';
@@ -2545,7 +2659,7 @@
           el.quranAudioProgress.textContent=fmt(quranAudio.currentTime)+' / '+fmt(quranAudio.duration);
         }
       });
-      quranAudio.addEventListener('ended',stopQuranAudio,{once:true});
+      quranAudio.addEventListener('ended',()=>playNextQuranSurah(surah),{once:true});
       quranAudio.addEventListener('error',stopQuranAudio,{once:true});
       updateQuranPlayerUI('playing');
       quranAudio.play().catch(()=>stopQuranAudio());
@@ -2661,6 +2775,37 @@
     console.error('Tasbih+ Quran metadata integrity check failed');
   }
 
+  const QURAN_OFFLINE_EDITIONS={
+    arabic:'quran-uthmani',
+    transliteration:'en.transliteration',
+    french:'fr.hamidullah'
+  };
+  let quranOfflineLibraryPromise=null;
+
+  async function loadQuranOfflineLibrary(){
+    if(quranOfflineLibraryPromise) return quranOfflineLibraryPromise;
+    quranOfflineLibraryPromise=(async()=>{
+      const entries=await Promise.all(Object.entries(QURAN_OFFLINE_EDITIONS).map(async([key,edition])=>{
+        const res=await fetch('https://api.alquran.cloud/v1/quran/'+edition);
+        if(!res.ok) throw new Error('Quran offline library request failed: '+edition);
+        const body=await res.json();
+        if(body.code!==200 || !Array.isArray(body.data?.surahs) || body.data.surahs.length!==114){
+          throw new Error('Invalid Quran offline library: '+edition);
+        }
+        return [key,body.data];
+      }));
+      return Object.fromEntries(entries);
+    })();
+    try{return await quranOfflineLibraryPromise;}
+    catch(err){quranOfflineLibraryPromise=null;throw err;}
+  }
+
+  async function getQuranSurahFromOfflineLibrary(number){
+    const lib=await loadQuranOfflineLibrary();
+    const pick=(edition)=>edition.surahs.find(s=>Number(s.number)===Number(number));
+    return {arabic:pick(lib.arabic),transliteration:pick(lib.transliteration),french:pick(lib.french)};
+  }
+
   async function openQuranSurah(number){
     const info=QURAN_SURAHS.find(s=>s.n===number);
     if(!info) return;
@@ -2694,26 +2839,7 @@
 
     try{
       if(!data){
-        const base='https://api.alquran.cloud/v1/surah/'+number+'/';
-        const [arRes,trRes,frRes]=await Promise.all([
-          fetch(base+'quran-uthmani'),
-          fetch(base+'en.transliteration'),
-          fetch(base+'fr.hamidullah')
-        ]);
-        if(!arRes.ok || !trRes.ok || !frRes.ok) throw new Error('Quran API request failed');
-        const [arBody,trBody,frBody]=await Promise.all([arRes.json(),trRes.json(),frRes.json()]);
-        if(
-          arBody.code!==200 || trBody.code!==200 || frBody.code!==200 ||
-          !Array.isArray(arBody.data?.ayahs) ||
-          !Array.isArray(trBody.data?.ayahs) ||
-          !Array.isArray(frBody.data?.ayahs)
-        ) throw new Error('Invalid Quran response');
-
-        data={
-          arabic:arBody.data,
-          transliteration:trBody.data,
-          french:frBody.data
-        };
+        data=await getQuranSurahFromOfflineLibrary(number);
         if(!validateQuranSurahData(number,data)){
           throw new Error('Quran edition alignment validation failed');
         }
@@ -2852,15 +2978,9 @@
       }
     }catch(_){}
 
-    const base='https://api.alquran.cloud/v1/juz/'+juzNumber+'/';
-    const [arRes,trRes,frRes]=await Promise.all([
-      fetch(base+'quran-uthmani'),
-      fetch(base+'en.transliteration'),
-      fetch(base+'fr.hamidullah')
-    ]);
-    if(!arRes.ok||!trRes.ok||!frRes.ok) throw new Error('Juz API request failed');
-    const [arBody,trBody,frBody]=await Promise.all([arRes.json(),trRes.json(),frRes.json()]);
-    const ar=arBody.data?.ayahs, tr=trBody.data?.ayahs, fr=frBody.data?.ayahs;
+    const lib=await loadQuranOfflineLibrary();
+    const flattenJuz=(edition)=>edition.surahs.flatMap(s=>(s.ayahs||[]).filter(a=>Number(a.juz)===Number(juzNumber)).map(a=>({...a,surah:{number:s.number,name:s.name,englishName:s.englishName}})));
+    const ar=flattenJuz(lib.arabic), tr=flattenJuz(lib.transliteration), fr=flattenJuz(lib.french);
     if(!validateJuzEdition(ar,juzNumber)||!validateJuzEdition(tr,juzNumber)||!validateJuzEdition(fr,juzNumber)){
       throw new Error('Juz integrity validation failed');
     }
