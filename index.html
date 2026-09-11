@@ -2490,7 +2490,7 @@
   function getQuranAudio(){
     if(!quranAudio){
       quranAudio=new Audio();
-      quranAudio.preload='auto';
+      quranAudio.preload='metadata';
       quranAudio.setAttribute('playsinline','');
       quranAudio.setAttribute('webkit-playsinline','');
     }
@@ -2674,7 +2674,6 @@
       const audioUrl=quranWholeSurahUrl(reciterId,surah);
       const audio=getQuranAudio();
       audio.src=audioUrl;
-      audio.load();
       audio.onplaying=()=>{
         quranAudioPaused=false;
         updateQuranPlayerUI('playing');
@@ -2698,16 +2697,19 @@
         if(el.quranAudioStatus) el.quranAudioStatus.textContent='Audio indisponible — vérifiez le téléchargement ou la connexion.';
         updateQuranPlayerUI('ready');
       };
-      updateQuranPlayerUI('playing');
-      audio.play().catch(()=>{
-        if(el.quranAudioStatus) el.quranAudioStatus.textContent='Appuyez de nouveau sur ▶ pour autoriser le son sur ce téléphone.';
+      if(el.quranAudioStatus) el.quranAudioStatus.textContent='Chargement de l’audio…';
+      audio.play().then(()=>{
+        quranAudioPaused=false;
+        updateQuranPlayerUI('playing');
+      }).catch(err=>{
+        const blocked=err && err.name==='NotAllowedError';
+        if(el.quranAudioStatus) el.quranAudioStatus.textContent=blocked?'Touchez de nouveau ▶ pour autoriser le son.':'Impossible de charger l’audio — vérifiez la connexion.';
         quranAudioPaused=true;
         updateQuranPlayerUI('paused');
       });
       return;
     }
     audio.src='https://cdn.islamic.network/quran/audio/'+reciter.bitrate+'/'+reciterId+'/'+globalAyah+'.mp3';
-    audio.load();
     audio.ontimeupdate=()=>{
       if(!Number.isFinite(audio.duration)||!el.quranAudioTrackFill)return;
       const base=index/info.verses, part=(audio.currentTime/audio.duration)/info.verses;
@@ -2718,9 +2720,13 @@
       if(el.quranAudioStatus) el.quranAudioStatus.textContent='Audio indisponible — vérifiez la connexion.';
       updateQuranPlayerUI('ready');
     };
-    updateQuranPlayerUI('playing');
-    audio.play().catch(()=>{
-      if(el.quranAudioStatus) el.quranAudioStatus.textContent='Appuyez de nouveau sur ▶ pour autoriser le son sur ce téléphone.';
+    if(el.quranAudioStatus) el.quranAudioStatus.textContent='Chargement de l’audio…';
+    audio.play().then(()=>{
+      quranAudioPaused=false;
+      updateQuranPlayerUI('playing');
+    }).catch(err=>{
+      const blocked=err && err.name==='NotAllowedError';
+      if(el.quranAudioStatus) el.quranAudioStatus.textContent=blocked?'Touchez de nouveau ▶ pour autoriser le son.':'Impossible de charger l’audio — vérifiez la connexion.';
       quranAudioPaused=true;
       updateQuranPlayerUI('paused');
     });

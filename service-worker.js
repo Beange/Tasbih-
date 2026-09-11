@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v59-all-reciter-audio';
+const CACHE_NAME = 'tasbih-plus-v61-mobile-audio';
 const AUDIO_CACHE_NAME = 'tasbih-plus-quran-audio-v3';
 const APP_SHELL = [
   './',
@@ -41,22 +41,53 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if(event.request.method !== 'GET') return;
+
+  const request = event.request;
+  const isAudio = request.destination === 'audio' || /\.mp3(?:$|[?#])/i.test(request.url);
+  const isRangeRequest = request.headers.has('range');
+
+  // IMPORTANT MOBILE (Safari/iOS notamment): les lecteurs audio utilisent
+  // souvent des requêtes HTTP Range. Une réponse complète provenant du Cache
+  // Storage ne doit pas remplacer une réponse 206 Partial Content attendue.
+  // Les requêtes Range audio vont donc directement au serveur d'origine.
+  if(isAudio && isRangeRequest){
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Pour l'audio en ligne, privilégier le réseau afin d'éviter qu'une ancienne
+  // réponse opaque/incomplète bloque la lecture. En cas d'échec réseau, essayer
+  // le cache audio (utile hors connexion sur les navigateurs compatibles).
+  if(isAudio){
+    event.respondWith((async()=>{
+      try{
+        const response = await fetch(request);
+        if(response && (response.status === 200 || response.type === 'opaque')){
+          const cache = await caches.open(AUDIO_CACHE_NAME);
+          cache.put(request, response.clone()).catch(()=>{});
+        }
+        return response;
+      }catch(err){
+        const cache = await caches.open(AUDIO_CACHE_NAME);
+        const cached = await cache.match(request);
+        if(cached) return cached;
+        throw err;
+      }
+    })());
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
+    caches.match(request).then(cached => {
       if(cached) return cached;
-      return fetch(event.request).then(response => {
-        if(!response) return response;
-        // Les MP3 sont conservés dans un cache audio séparé afin que l'état
-        // hors connexion et le nettoyage des caches restent cohérents.
-        if(response.status===200 || response.type==='opaque'){
+      return fetch(request).then(response => {
+        if(response && response.status === 200){
           const copy=response.clone();
-          const isAudio=/\.mp3(?:$|[?#])/i.test(event.request.url) || event.request.destination==='audio';
-          const targetCache=isAudio ? AUDIO_CACHE_NAME : CACHE_NAME;
-          caches.open(targetCache).then(cache => cache.put(event.request, copy)).catch(()=>{});
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(()=>{});
         }
         return response;
       }).catch(() => {
-        if(event.request.mode==='navigate') return caches.match('./index.html');
+        if(request.mode==='navigate') return caches.match('./index.html');
         return Response.error();
       });
     })
