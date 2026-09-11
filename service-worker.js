@@ -46,10 +46,13 @@ self.addEventListener('fetch', event => {
       if(cached) return cached;
       return fetch(event.request).then(response => {
         if(!response) return response;
-        // Cache aussi les médias cross-origin opaques (audio) après leur première écoute.
+        // Les MP3 sont conservés dans un cache audio séparé afin que l'état
+        // hors connexion et le nettoyage des caches restent cohérents.
         if(response.status===200 || response.type==='opaque'){
           const copy=response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(()=>{});
+          const isAudio=/\.mp3(?:$|[?#])/i.test(event.request.url) || event.request.destination==='audio';
+          const targetCache=isAudio ? AUDIO_CACHE_NAME : CACHE_NAME;
+          caches.open(targetCache).then(cache => cache.put(event.request, copy)).catch(()=>{});
         }
         return response;
       }).catch(() => {
