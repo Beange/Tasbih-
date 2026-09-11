@@ -2490,6 +2490,16 @@
   let quranAudio=null;
   let quranCurrentPlaying=null;
 
+  function getQuranAudio(){
+    if(!quranAudio){
+      quranAudio=new Audio();
+      quranAudio.preload='auto';
+      quranAudio.setAttribute('playsinline','');
+      quranAudio.setAttribute('webkit-playsinline','');
+    }
+    return quranAudio;
+  }
+
   function getQuranBookmark(){
     try{return JSON.parse(localStorage.getItem(QURAN_BOOKMARK_KEY)||'null');}catch(_){return null;}
   }
@@ -2622,7 +2632,13 @@
     document.querySelectorAll('.ayah.playing').forEach(x=>x.classList.remove('playing'));
   }
   function stopQuranAudio(){
-    if(quranAudio){quranAudio.pause();quranAudio.currentTime=0;quranAudio=null;}
+    if(quranAudio){
+      quranAudio.pause();
+      try{quranAudio.currentTime=0;}catch(_){}
+      quranAudio.onended=null;
+      quranAudio.onerror=null;
+      quranAudio.ontimeupdate=null;
+    }
     clearQuranPlayingRow();
     quranCurrentPlaying=null;quranPlayingSurah=null;quranPlayingAyahIndex=0;quranAudioPaused=false;
     updateQuranPlayerUI('ready');
@@ -2643,7 +2659,9 @@
     if(!info)return;
     if(index<0)index=0;
     if(index>=info.verses){playNextQuranSurah(surah);return;}
-    if(quranAudio){quranAudio.pause();quranAudio=null;}
+    const audio=getQuranAudio();
+    audio.pause();
+    audio.onended=null; audio.onerror=null; audio.ontimeupdate=null;
     clearQuranPlayingRow();
     quranPlayingSurah=surah;quranPlayingAyahIndex=index;quranAudioPaused=false;
     const ayah=index+1,row=document.getElementById('ayah-'+surah+'-'+ayah);
@@ -2654,31 +2672,48 @@
       clearQuranPlayingRow();
       quranPlayingSurah=surah; quranPlayingAyahIndex=0; quranAudioPaused=false;
       const audioUrl=quranWholeSurahUrl(reciterId,surah);
-      quranAudio=new Audio(audioUrl);
-      quranAudio.addEventListener('timeupdate',()=>{
-        if(!quranAudio||!Number.isFinite(quranAudio.duration)||!el.quranAudioTrackFill)return;
-        el.quranAudioTrackFill.style.width=((quranAudio.currentTime/quranAudio.duration)*100)+'%';
+      const audio=getQuranAudio();
+      audio.src=audioUrl;
+      audio.load();
+      audio.ontimeupdate=()=>{
+        if(!Number.isFinite(audio.duration)||!el.quranAudioTrackFill)return;
+        el.quranAudioTrackFill.style.width=((audio.currentTime/audio.duration)*100)+'%';
         if(el.quranAudioProgress){
           const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
-          el.quranAudioProgress.textContent=fmt(quranAudio.currentTime)+' / '+fmt(quranAudio.duration);
+          el.quranAudioProgress.textContent=fmt(audio.currentTime)+' / '+fmt(audio.duration);
         }
-      });
-      quranAudio.addEventListener('ended',()=>playNextQuranSurah(surah),{once:true});
-      quranAudio.addEventListener('error',stopQuranAudio,{once:true});
+      };
+      audio.onended=()=>playNextQuranSurah(surah);
+      audio.onerror=()=>{
+        if(el.quranAudioStatus) el.quranAudioStatus.textContent='Audio indisponible — vérifiez le téléchargement ou la connexion.';
+        updateQuranPlayerUI('ready');
+      };
       updateQuranPlayerUI('playing');
-      quranAudio.play().catch(()=>stopQuranAudio());
+      audio.play().catch(()=>{
+        if(el.quranAudioStatus) el.quranAudioStatus.textContent='Appuyez de nouveau sur ▶ pour autoriser le son sur ce téléphone.';
+        quranAudioPaused=true;
+        updateQuranPlayerUI('paused');
+      });
       return;
     }
-    quranAudio=new Audio('https://cdn.islamic.network/quran/audio/'+reciter.bitrate+'/'+reciterId+'/'+globalAyah+'.mp3');
-    quranAudio.addEventListener('timeupdate',()=>{
-      if(!quranAudio||!Number.isFinite(quranAudio.duration)||!el.quranAudioTrackFill)return;
-      const base=index/info.verses, part=(quranAudio.currentTime/quranAudio.duration)/info.verses;
+    audio.src='https://cdn.islamic.network/quran/audio/'+reciter.bitrate+'/'+reciterId+'/'+globalAyah+'.mp3';
+    audio.load();
+    audio.ontimeupdate=()=>{
+      if(!Number.isFinite(audio.duration)||!el.quranAudioTrackFill)return;
+      const base=index/info.verses, part=(audio.currentTime/audio.duration)/info.verses;
       el.quranAudioTrackFill.style.width=((base+part)*100)+'%';
-    });
-    quranAudio.addEventListener('ended',()=>playSurahAyah(surah,index+1),{once:true});
-    quranAudio.addEventListener('error',stopQuranAudio,{once:true});
+    };
+    audio.onended=()=>playSurahAyah(surah,index+1);
+    audio.onerror=()=>{
+      if(el.quranAudioStatus) el.quranAudioStatus.textContent='Audio indisponible — vérifiez la connexion.';
+      updateQuranPlayerUI('ready');
+    };
     updateQuranPlayerUI('playing');
-    quranAudio.play().catch(()=>stopQuranAudio());
+    audio.play().catch(()=>{
+      if(el.quranAudioStatus) el.quranAudioStatus.textContent='Appuyez de nouveau sur ▶ pour autoriser le son sur ce téléphone.';
+      quranAudioPaused=true;
+      updateQuranPlayerUI('paused');
+    });
   }
   function toggleWholeSurah(){
     const n=Number(el.quranReaderPanel?.dataset.surah||0);if(!n)return;

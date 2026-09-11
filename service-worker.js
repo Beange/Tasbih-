@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v56-autoplay-fix';
+const CACHE_NAME = 'tasbih-plus-v57-mobile-audio';
 const AUDIO_CACHE_NAME = 'tasbih-plus-quran-audio-v1';
 const APP_SHELL = [
   './',
