@@ -2627,12 +2627,16 @@
     quranCurrentPlaying=null;quranPlayingSurah=null;quranPlayingAyahIndex=0;quranAudioPaused=false;
     updateQuranPlayerUI('ready');
   }
-  async function playNextQuranSurah(surah){
+  function playNextQuranSurah(surah){
     const next=Number(surah)+1;
     if(next>114){stopQuranAudio();return;}
-    stopQuranAudio();
-    await openQuranSurah(next);
+
+    // Démarre immédiatement l'audio suivant depuis l'événement "ended".
+    // Cela évite que certains navigateurs/PWA bloquent play() après un await.
     playSurahAyah(next,0);
+
+    // Met ensuite à jour l'écran du lecteur sans interrompre l'audio déjà lancé.
+    openQuranSurah(next,true).catch(()=>{});
   }
   function playSurahAyah(surah,index){
     const info=quranSurahInfo(surah);
@@ -2806,15 +2810,15 @@
     return {arabic:pick(lib.arabic),transliteration:pick(lib.transliteration),french:pick(lib.french)};
   }
 
-  async function openQuranSurah(number){
+  async function openQuranSurah(number,preserveAudio=false){
     const info=QURAN_SURAHS.find(s=>s.n===number);
     if(!info) return;
 
     if(el.quranReaderPanel) el.quranReaderPanel.dataset.readerOrigin='surah';
     if(el.quranAudioPlayer) el.quranAudioPlayer.hidden=false;
-    stopQuranAudio();
+    if(!preserveAudio) stopQuranAudio();
     if(el.quranReaderPanel) el.quranReaderPanel.dataset.surah=String(number);
-    updateQuranPlayerUI('ready');
+    updateQuranPlayerUI(preserveAudio?'playing':'ready');
     setQuranReaderVisible(true);
     if(el.quranReaderTitle){
       el.quranReaderTitle.innerHTML='<span class="quran-reader-ar-title" lang="ar" dir="rtl">'+info.ar+'</span>'+info.name;
