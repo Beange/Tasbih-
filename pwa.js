@@ -1,7 +1,31 @@
 (() => {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
+      navigator.serviceWorker.register('./service-worker.js').then(reg => {
+        // Une mise à jour peut déjà être en attente (onglet resté ouvert longtemps).
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          window.dispatchEvent(new CustomEvent('tasbih:update-available', { detail: { worker: reg.waiting } }));
+        }
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            // "installed" + un controller déjà actif = vraie mise à jour, pas la 1re installation.
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.dispatchEvent(new CustomEvent('tasbih:update-available', { detail: { worker: newWorker } }));
+            }
+          });
+        });
+      }).catch(console.warn);
+
+      // Recharge une seule fois quand le nouveau Service Worker prend le contrôle,
+      // pour que l'utilisateur voie la nouvelle version après avoir cliqué "Recharger".
+      let refreshingAfterUpdate = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshingAfterUpdate) return;
+        refreshingAfterUpdate = true;
+        window.location.reload();
+      });
     });
   }
 

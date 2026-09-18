@@ -1362,6 +1362,29 @@
 
 
 .mediter-when{margin:.55rem 0 0;padding-left:1.25rem;display:grid;gap:.42rem}.mediter-when li{line-height:1.5}
+
+/* v63 — bannières de connexion / mise à jour, badge et export/import des données */
+.conn-banner,.update-banner{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; justify-content:center; gap:.7rem;
+  width:100%; padding:.55rem 1rem;
+  font:600 .82rem 'Inter',sans-serif; text-align:center;
+  box-sizing:border-box;
+}
+.conn-banner{ background:var(--bg-panel-2); color:var(--text-muted); }
+.update-banner{ background:var(--gold); color:var(--bg-panel); }
+.update-banner button{
+  border:1px solid currentColor; background:transparent; color:inherit;
+  border-radius:999px; padding:.3rem .8rem; font:700 .78rem 'Inter',sans-serif; cursor:pointer;
+}
+.offline-badge{
+  display:inline-flex; align-items:center; gap:.35rem;
+  margin-top:.35rem; font-size:.78rem; color:var(--text-muted);
+}
+.offline-badge .dot{ width:.5rem; height:.5rem; border-radius:50%; background:var(--listening); flex-shrink:0; }
+.data-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.9rem; }
+.data-actions .choice-btn{ flex:1 1 auto; min-width:9rem; }
+#dataStatus{ min-height:1.2em; margin:.6rem 0 0; font-size:.82rem; color:var(--text-muted); text-align:center; }
 </style>
 
 <link rel="manifest" href="manifest.webmanifest">
@@ -1370,12 +1393,19 @@
 </head>
 <body>
 
+  <div id="connBanner" class="conn-banner" role="status" aria-live="polite" hidden></div>
+  <div id="updateBanner" class="update-banner" role="status" hidden>
+    <span data-i18n="updateAvailable">Nouvelle version disponible</span>
+    <button type="button" id="updateReloadBtn" data-i18n="updateReload">Recharger</button>
+  </div>
+
   <div id="mainView" class="app-view">
     <div class="app-shell">
       <div class="topbar">
         <div class="brand">
           <h1>Tasbih+</h1>
           <p data-i18n="brandSubtitle">Votre compteur vocal de dhikr.</p>
+          <p class="offline-badge"><span class="dot" aria-hidden="true"></span><span data-i18n="offlineCapableNote">Fonctionne aussi hors connexion</span></p>
         </div>
         <button class="top-settings-btn nav-btn" type="button" data-view="settingsView" aria-label="Réglages" title="Réglages"><span aria-hidden="true">⚙</span></button>
       </div>
@@ -1668,6 +1698,23 @@
     <div class="panel">
       <h2 class="settings-section-title" data-i18n="dataTitle">Données</h2>
       <p style="margin:0;color:var(--text-muted);font-size:.86rem;line-height:1.5;" data-i18n="dataText">Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.</p>
+      <p style="margin:.5rem 0 0;color:var(--text-muted);font-size:.86rem;line-height:1.5;" data-i18n="offlineDataText">Une fois ouverte au moins une fois, l’application (compteur, Coran, Asma, méditations) fonctionne sans connexion Internet. Seule la diffusion audio en ligne et le téléchargement de nouvelles récitations nécessitent une connexion.</p>
+      <div class="setting-card" style="margin-top:.8rem;">
+        <div class="setting-main">
+          <span class="setting-icon" aria-hidden="true">📖</span>
+          <div class="setting-copy">
+            <label data-i18n="quranTextOfflineLabel">Texte du Coran hors connexion</label>
+            <small id="quranTextOfflineState"></small>
+          </div>
+        </div>
+        <button type="button" class="choice-btn" id="quranTextOfflineBtn"></button>
+      </div>
+      <div class="data-actions">
+        <button type="button" class="choice-btn" id="exportDataBtn" data-i18n="dataExport">Exporter mes données</button>
+        <button type="button" class="choice-btn" id="importDataBtn" data-i18n="dataImport">Importer des données</button>
+        <input type="file" id="importDataInput" accept="application/json" hidden>
+      </div>
+      <p id="dataStatus" aria-live="polite"></p>
     </div>
   </div>
 
@@ -2175,43 +2222,52 @@
     quickMicText: document.getElementById('quickMicText'),
     quickDuration: document.getElementById('quickDuration'),
     quickPause: document.getElementById('quickPause'),
-    quickPauseText: document.getElementById('quickPauseText')
+    quickPauseText: document.getElementById('quickPauseText'),
+    connBanner: document.getElementById('connBanner'),
+    updateBanner: document.getElementById('updateBanner'),
+    updateReloadBtn: document.getElementById('updateReloadBtn'),
+    exportDataBtn: document.getElementById('exportDataBtn'),
+    importDataBtn: document.getElementById('importDataBtn'),
+    importDataInput: document.getElementById('importDataInput'),
+    dataStatus: document.getElementById('dataStatus'),
+    quranTextOfflineState: document.getElementById('quranTextOfflineState'),
+    quranTextOfflineBtn: document.getElementById('quranTextOfflineBtn')
   };
 
 
   const I18N = {
     fr:{
       brandSubtitle:'Votre compteur vocal de dhikr.', counterAria:'Compteur de dhikr', navAria:'Navigation principale',
-      navTasbih:'Tasbih', navDhikrs:'Mes dhikrs', navAsma:'Asma', navQuran:'Coran', navSettings:'Réglages', quranTitle:'Coran', quranSubtitle:'Parcourez les 114 sourates et les 30 juz’.', quranSurahs:'Sourates', quranJuz:'Juz’', quranSearch:'Rechercher une sourate…', quranVerses:'versets', quranFrom:'De', quranTo:'à', quranBack:'Sourates', quranLoading:'Chargement de la sourate…', quranLoadError:'Impossible de charger la sourate. Vérifiez votre connexion Internet.', quranPhonetic:'Phonétique', quranTranslation:'Traduction', quranListen:'Écouter', quranStop:'Arrêter', quranMark:'Marquer', quranMarked:'Marqué', quranResume:'Reprendre', quranPlaySurah:'Écouter toute la sourate', quranStopSurah:'Arrêter la sourate', quranAudioReady:'Prêt à écouter', quranAudioPlaying:'Lecture', quranAudioPaused:'En pause', quranReciter:'Récitateur', micPaused:'Micro en pause', micOn:'Micro actif — je vous écoute', micOff:'Micro coupé', micActive:'Micro actif', micEnable:'Activer le micro', micDisable:'Couper le micro',
+      navTasbih:'Tasbih', navDhikrs:'Mes dhikrs', navAsma:'Asma', navQuran:'Coran', navSettings:'Réglages', quranTitle:'Coran', quranSubtitle:'Parcourez les 114 sourates et les 30 juz’.', quranSurahs:'Sourates', quranJuz:'Juz’', quranSearch:'Rechercher une sourate…', quranVerses:'versets', quranFrom:'De', quranTo:'à', quranBack:'Sourates', quranLoading:'Chargement de la sourate…', quranLoadError:'Impossible de charger la sourate. Vérifiez votre connexion Internet.', quranLoadErrorOfflineHint:' Astuce : ouvrez Réglages → Données et téléchargez le texte du Coran une fois en ligne pour le lire hors connexion ensuite.', quranPhonetic:'Phonétique', quranTranslation:'Traduction', quranListen:'Écouter', quranStop:'Arrêter', quranMark:'Marquer', quranMarked:'Marqué', quranResume:'Reprendre', quranPlaySurah:'Écouter toute la sourate', quranStopSurah:'Arrêter la sourate', quranAudioReady:'Prêt à écouter', quranAudioPlaying:'Lecture', quranAudioPaused:'En pause', quranReciter:'Récitateur', micPaused:'Micro en pause', micOn:'Micro actif — je vous écoute', micOff:'Micro coupé', micActive:'Micro actif', micEnable:'Activer le micro', micDisable:'Couper le micro',
       reset:'Réinitialiser', pause:'Mettre en pause', resume:'Reprendre', countingActive:'Comptage actif', countingPaused:'Comptage en pause', micPausedCounting:'Micro actif — en pause, ne compte pas',
       chooseDhikr:'Choisir le dhikr', target:'Objectif', timerTitle:'Minuteur du dhikr', measureOne:'Mesurer une répétition', stopMeasure:'Arrêter la mesure', durationUnset:'Durée non réglée', durationLabel:'Durée : ', perRepeat:' / répétition', timerStart:'Démarrer le minuteur', timerStop:'Arrêter le minuteur', free:'Libre',
       myDhikrsTitle:'Mes dhikrs', myDhikrsSubtitle:'Ajoutez, modifiez ou supprimez vos dhikrs personnalisés.', addDhikrTitle:'Ajouter un dhikr', editDhikrTitle:'Modifier le dhikr', addThisDhikr:'Ajouter ce dhikr', saveChanges:'Enregistrer les modifications', cancelEdit:'Annuler la modification', availableDhikrs:'Dhikrs disponibles', edit:'Modifier', delete:'Supprimer',
       translitPlaceholder:'Translittération (ex. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Traduction (optionnel)',
-      asmaTitle:'Asma', asmaMainTab:'99 Names', asmaExtraTab:'Additional names', asmaMainTab:'99 Nomi', asmaExtraTab:'Nomi aggiuntivi', asmaMainTab:'99 Noms', asmaExtraTab:'Noms supplémentaires', asmaSubtitle:'Les 99 beaux noms d’Allah — Al-Asma al-Husna.', asmaGuidanceNote:'Les situations et invocations ci-dessous sont des suggestions liées au sens des Noms, et non des formules obligatoires ni des effets garantis.', asmaSearchPlaceholder:'Rechercher un nom…', asmaSearchAria:'Rechercher parmi les 99 noms', asmaNoResults:'Aucun nom trouvé.', asmaInvokeWhenLabel:'Invoquer ce nom', asmaDuaLabel:'Exemple d’invocation', asmaExtraTitle:'Autres noms attestés dans le Coran et la Sunna', asmaExtraNote:'Section séparée de la liste traditionnelle des 99. Les références indiquent le texte utilisé pour attester chaque appellation.', asmaSourceLabel:'Source', settingsTitle:'Réglages', settingsSubtitle:'Personnalisez l’application selon vos préférences.', themeTitle:'Thème de l’application', themeHint:'Choisissez une ambiance visuelle. Le thème est mémorisé automatiquement.', themeDark:'Sombre', themeBlue:'Bleu', themeGreen:'Vert', themePurple:'Violet', themePink:'Rose', languageTitle:'Langue de l’interface', languageIntro:'Choisissez la langue des boutons, menus et messages de l’application.', languageLabel:'Langue', languageHint:'Le changement est appliqué immédiatement.', speechLanguageNote:'Dhikrs : reconnaissance en arabe. Commandes vocales : dites « Pause », « Reprends » ou « Remets à zéro ». Si Chrome les transcrit mal, les commandes arabes « توقف », « استمر » et « صفر » sont aussi reconnues.', comfortTitle:'Confort et affichage', vibrationLabel:'Vibration au comptage', vibrationHint:'Retour haptique léger sur mobile compatible.', arabicSizeLabel:'Taille du texte arabe', arabicSizeHint:'Ajuste uniquement le dhikr principal.', confirmResetLabel:'Confirmer les remises à zéro', confirmResetHint:'Évite les réinitialisations accidentelles.', dataTitle:'Données', dataText:'Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.',
+      asmaTitle:'Asma', asmaMainTab:'99 Names', asmaExtraTab:'Additional names', asmaMainTab:'99 Nomi', asmaExtraTab:'Nomi aggiuntivi', asmaMainTab:'99 Noms', asmaExtraTab:'Noms supplémentaires', asmaSubtitle:'Les 99 beaux noms d’Allah — Al-Asma al-Husna.', asmaGuidanceNote:'Les situations et invocations ci-dessous sont des suggestions liées au sens des Noms, et non des formules obligatoires ni des effets garantis.', asmaSearchPlaceholder:'Rechercher un nom…', asmaSearchAria:'Rechercher parmi les 99 noms', asmaNoResults:'Aucun nom trouvé.', asmaInvokeWhenLabel:'Invoquer ce nom', asmaDuaLabel:'Exemple d’invocation', asmaExtraTitle:'Autres noms attestés dans le Coran et la Sunna', asmaExtraNote:'Section séparée de la liste traditionnelle des 99. Les références indiquent le texte utilisé pour attester chaque appellation.', asmaSourceLabel:'Source', settingsTitle:'Réglages', settingsSubtitle:'Personnalisez l’application selon vos préférences.', themeTitle:'Thème de l’application', themeHint:'Choisissez une ambiance visuelle. Le thème est mémorisé automatiquement.', themeDark:'Sombre', themeBlue:'Bleu', themeGreen:'Vert', themePurple:'Violet', themePink:'Rose', languageTitle:'Langue de l’interface', languageIntro:'Choisissez la langue des boutons, menus et messages de l’application.', languageLabel:'Langue', languageHint:'Le changement est appliqué immédiatement.', speechLanguageNote:'Dhikrs : reconnaissance en arabe. Commandes vocales : dites « Pause », « Reprends » ou « Remets à zéro ». Si Chrome les transcrit mal, les commandes arabes « توقف », « استمر » et « صفر » sont aussi reconnues.', comfortTitle:'Confort et affichage', vibrationLabel:'Vibration au comptage', vibrationHint:'Retour haptique léger sur mobile compatible.', arabicSizeLabel:'Taille du texte arabe', arabicSizeHint:'Ajuste uniquement le dhikr principal.', confirmResetLabel:'Confirmer les remises à zéro', confirmResetHint:'Évite les réinitialisations accidentelles.', dataTitle:'Données', dataText:'Les dhikrs personnalisés, les compteurs et les réglages sont enregistrés localement dans le navigateur.', offlineCapableNote:'Fonctionne aussi hors connexion', offlineDataText:'Une fois ouverte au moins une fois, l’application (compteur, Coran, Asma, méditations) fonctionne sans connexion Internet. Seule la diffusion audio en ligne et le téléchargement de nouvelles récitations nécessitent une connexion.', offlineNowNotice:'Vous êtes hors connexion — Tasbih+ continue de fonctionner normalement.', backOnlineNotice:'Connexion rétablie.', updateAvailable:'Nouvelle version disponible', updateReload:'Recharger', dataExport:'Exporter mes données', dataImport:'Importer des données', dataExportedFile:'tasbih-plus-donnees.json', dataExportSuccess:'Données exportées.', dataImportSuccess:'Données importées. Rechargement…', dataImportError:'Fichier invalide, import annulé.', storageFullWarning:'Stockage local plein : certaines données récentes n’ont pas pu être enregistrées.', quranTextOfflineLabel:'Texte du Coran hors connexion', quranTextOfflineReady:'✓ Disponible hors connexion (les 3 éditions : arabe, phonétique, traduction).', quranTextOfflineMissing:'Pas encore téléchargé pour une lecture hors connexion.', quranTextOfflineDownload:'⬇ Télécharger', quranTextOfflineRetry:'↻ Retélécharger', quranTextOfflineDownloading:'Téléchargement du texte du Coran…', quranTextOfflineDone:'✓ Texte du Coran téléchargé pour une lecture hors connexion.', quranTextOfflineError:'Échec du téléchargement — vérifiez votre connexion et réessayez.', quranTextOfflineUnsupported:'Stockage hors ligne non pris en charge par ce navigateur.',
       confirmReset:'Remettre le compteur à zéro ?', resetDone:'Compteur de ce dhikr remis à zéro', targetReached:'objectif atteint', heard:'Entendu', notRecognized:'Non reconnu', phraseNotRecognized:'Phrase non reconnue', sayDhikrMeasure:'Dites le dhikr, je mesure le temps', durationSet:'Durée réglée à ', timerStarted:'Minuteur démarré', timerStopped:'Minuteur arrêté',
       deleteConfirm:n=>'Supprimer « '+n+' » ?', deleted:n=>'« '+n+' » supprimé.', duplicate:'Un dhikr avec cette translittération existe déjà.', modified:n=>'« '+n+' » modifié.', added:n=>'« '+n+' » ajouté à la liste des dhikrs.', invalidTranslit:'Merci d’indiquer une translittération valide.', switched:(n,c)=>'Dhikr changé pour '+n+', compteur '+c,
       micDenied:'Accès au micro refusé par le navigateur', micDeniedShort:'Accès au micro refusé', micPermission:'Autorisez le microphone pour activer la reconnaissance vocale', micPermissionError:'Impossible d’obtenir l’autorisation du microphone', noMic:'Aucun micro détecté', networkRetry:'Micro actif — problème réseau, nouvelle tentative', micStartError:'Impossible de démarrer le micro', unknownError:'erreur inconnue', safariSpeechUnavailable:'Safari autorise le microphone, mais la reconnaissance vocale Web n’est pas disponible dans ce mode. Essayez d’ouvrir Tasbih+ directement dans Safari.', speechUnsupported:"La reconnaissance vocale n'est pas prise en charge par ce navigateur. Le cercle et les boutons restent utilisables au toucher. Essayez Chrome, Edge ou une version récente de Safari."
     },
     it:{
       brandSubtitle:'Il tuo contatore vocale di dhikr.', counterAria:'Contatore di dhikr', navAria:'Navigazione principale',
-      navTasbih:'Tasbih', navDhikrs:'I miei dhikr', navAsma:'Asma', navQuran:'Corano', navSettings:'Impostazioni', quranTitle:'Corano', quranSubtitle:'Esplora le 114 sure e i 30 juz’.', quranSurahs:'Sure', quranJuz:'Juz’', quranSearch:'Cerca una sura…', quranVerses:'versetti', quranFrom:'Da', quranTo:'a', quranBack:'Sure', quranLoading:'Caricamento della sura…', quranLoadError:'Impossibile caricare la sura. Controlla la connessione Internet.', quranPhonetic:'Fonetica', quranTranslation:'Traduzione', quranListen:'Ascolta', quranStop:'Ferma', quranMark:'Segna', quranMarked:'Segnato', quranResume:'Riprendi', quranPlaySurah:'Ascolta tutta la sura', quranStopSurah:'Ferma la sura', quranAudioReady:'Pronto ad ascoltare', quranAudioPlaying:'Riproduzione', quranAudioPaused:'In pausa', quranReciter:'Recitatore', micPaused:'Microfono in pausa', micOn:'Microfono attivo — ti ascolto', micOff:'Microfono spento', micActive:'Microfono attivo', micEnable:'Attiva microfono', micDisable:'Disattiva microfono',
+      navTasbih:'Tasbih', navDhikrs:'I miei dhikr', navAsma:'Asma', navQuran:'Corano', navSettings:'Impostazioni', quranTitle:'Corano', quranSubtitle:'Esplora le 114 sure e i 30 juz’.', quranSurahs:'Sure', quranJuz:'Juz’', quranSearch:'Cerca una sura…', quranVerses:'versetti', quranFrom:'Da', quranTo:'a', quranBack:'Sure', quranLoading:'Caricamento della sura…', quranLoadError:'Impossibile caricare la sura. Controlla la connessione Internet.', quranLoadErrorOfflineHint:' Suggerimento: apri Impostazioni → Dati e scarica il testo del Corano una volta online per leggerlo offline in seguito.', quranPhonetic:'Fonetica', quranTranslation:'Traduzione', quranListen:'Ascolta', quranStop:'Ferma', quranMark:'Segna', quranMarked:'Segnato', quranResume:'Riprendi', quranPlaySurah:'Ascolta tutta la sura', quranStopSurah:'Ferma la sura', quranAudioReady:'Pronto ad ascoltare', quranAudioPlaying:'Riproduzione', quranAudioPaused:'In pausa', quranReciter:'Recitatore', micPaused:'Microfono in pausa', micOn:'Microfono attivo — ti ascolto', micOff:'Microfono spento', micActive:'Microfono attivo', micEnable:'Attiva microfono', micDisable:'Disattiva microfono',
       reset:'Azzera', pause:'Metti in pausa', resume:'Riprendi', countingActive:'Conteggio attivo', countingPaused:'Conteggio in pausa', micPausedCounting:'Microfono attivo — in pausa, non conta',
       chooseDhikr:'Scegli il dhikr', target:'Obiettivo', timerTitle:'Timer del dhikr', measureOne:'Misura una ripetizione', stopMeasure:'Ferma misurazione', durationUnset:'Durata non impostata', durationLabel:'Durata: ', perRepeat:' / ripetizione', timerStart:'Avvia timer', timerStop:'Ferma timer', free:'Libero',
       myDhikrsTitle:'I miei dhikr', myDhikrsSubtitle:'Aggiungi, modifica o elimina i tuoi dhikr personalizzati.', addDhikrTitle:'Aggiungi un dhikr', editDhikrTitle:'Modifica il dhikr', addThisDhikr:'Aggiungi questo dhikr', saveChanges:'Salva modifiche', cancelEdit:'Annulla modifica', availableDhikrs:'Dhikr disponibili', edit:'Modifica', delete:'Elimina',
       translitPlaceholder:'Traslitterazione (es. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Traduzione (opzionale)',
-      asmaTitle:'Asma', asmaSubtitle:'I 99 bei nomi di Allah — Al-Asma al-Husna.', asmaGuidanceNote:'Le situazioni e le invocazioni seguenti sono suggerimenti legati al significato dei Nomi, non formule obbligatorie né effetti garantiti.', asmaSearchPlaceholder:'Cerca un nome…', asmaSearchAria:'Cerca tra i 99 nomi', asmaNoResults:'Nessun nome trovato.', asmaInvokeWhenLabel:'Invocare questo nome', asmaDuaLabel:'Esempio di invocazione', asmaExtraTitle:'Altri nomi attestati nel Corano e nella Sunna', asmaExtraNote:'Sezione separata dalla lista tradizionale dei 99 nomi.', asmaSourceLabel:'Fonte', settingsTitle:'Impostazioni', themeTitle:'Tema dell’app', themeHint:'Scegli l’aspetto dell’app. Il tema viene salvato automaticamente.', themeDark:'Scuro', themeBlue:'Blu', themeGreen:'Verde', themePurple:'Viola', themePink:'Rosa', settingsSubtitle:'Personalizza l’app secondo le tue preferenze.', languageTitle:'Lingua dell’interfaccia', languageIntro:'Scegli la lingua di pulsanti, menu e messaggi dell’app.', languageLabel:'Lingua', languageHint:'La modifica viene applicata immediatamente.', speechLanguageNote:'Dhikr: riconoscimento in arabo. Comandi vocali: dì « Pausa », « Riprendi » o « Azzera ». Se Chrome li trascrive male, funzionano anche « توقف », « استمر » e « صفر ».', comfortTitle:'Comfort e visualizzazione', vibrationLabel:'Vibrazione al conteggio', vibrationHint:'Leggero feedback aptico sui dispositivi compatibili.', arabicSizeLabel:'Dimensione del testo arabo', arabicSizeHint:'Regola solo il dhikr principale.', confirmResetLabel:'Conferma azzeramento', confirmResetHint:'Evita azzeramenti accidentali.', dataTitle:'Dati', dataText:'Dhikr personalizzati, contatori e impostazioni vengono salvati localmente nel browser.',
+      asmaTitle:'Asma', asmaSubtitle:'I 99 bei nomi di Allah — Al-Asma al-Husna.', asmaGuidanceNote:'Le situazioni e le invocazioni seguenti sono suggerimenti legati al significato dei Nomi, non formule obbligatorie né effetti garantiti.', asmaSearchPlaceholder:'Cerca un nome…', asmaSearchAria:'Cerca tra i 99 nomi', asmaNoResults:'Nessun nome trovato.', asmaInvokeWhenLabel:'Invocare questo nome', asmaDuaLabel:'Esempio di invocazione', asmaExtraTitle:'Altri nomi attestati nel Corano e nella Sunna', asmaExtraNote:'Sezione separata dalla lista tradizionale dei 99 nomi.', asmaSourceLabel:'Fonte', settingsTitle:'Impostazioni', themeTitle:'Tema dell’app', themeHint:'Scegli l’aspetto dell’app. Il tema viene salvato automaticamente.', themeDark:'Scuro', themeBlue:'Blu', themeGreen:'Verde', themePurple:'Viola', themePink:'Rosa', settingsSubtitle:'Personalizza l’app secondo le tue preferenze.', languageTitle:'Lingua dell’interfaccia', languageIntro:'Scegli la lingua di pulsanti, menu e messaggi dell’app.', languageLabel:'Lingua', languageHint:'La modifica viene applicata immediatamente.', speechLanguageNote:'Dhikr: riconoscimento in arabo. Comandi vocali: dì « Pausa », « Riprendi » o « Azzera ». Se Chrome li trascrive male, funzionano anche « توقف », « استمر » e « صفر ».', comfortTitle:'Comfort e visualizzazione', vibrationLabel:'Vibrazione al conteggio', vibrationHint:'Leggero feedback aptico sui dispositivi compatibili.', arabicSizeLabel:'Dimensione del testo arabo', arabicSizeHint:'Regola solo il dhikr principale.', confirmResetLabel:'Conferma azzeramento', confirmResetHint:'Evita azzeramenti accidentali.', dataTitle:'Dati', dataText:'Dhikr personalizzati, contatori e impostazioni vengono salvati localmente nel browser.', offlineCapableNote:'Funziona anche offline', offlineDataText:'Dopo la prima apertura, l’app (contatore, Corano, Asma, meditazioni) funziona senza connessione Internet. Solo lo streaming audio online e il download di nuove recitazioni richiedono una connessione.', offlineNowNotice:'Sei offline — Tasbih+ continua a funzionare normalmente.', backOnlineNotice:'Connessione ripristinata.', updateAvailable:'Nuova versione disponibile', updateReload:'Ricarica', dataExport:'Esporta i miei dati', dataImport:'Importa dati', dataExportedFile:'tasbih-plus-dati.json', dataExportSuccess:'Dati esportati.', dataImportSuccess:'Dati importati. Ricaricamento…', dataImportError:'File non valido, importazione annullata.', storageFullWarning:'Memoria locale piena: alcuni dati recenti non sono stati salvati.', quranTextOfflineLabel:'Testo del Corano offline', quranTextOfflineReady:'✓ Disponibile offline (3 edizioni: arabo, fonetica, traduzione).', quranTextOfflineMissing:'Non ancora scaricato per la lettura offline.', quranTextOfflineDownload:'⬇ Scarica', quranTextOfflineRetry:'↻ Riscarica', quranTextOfflineDownloading:'Download del testo del Corano…', quranTextOfflineDone:'✓ Testo del Corano scaricato per la lettura offline.', quranTextOfflineError:'Download non riuscito — controlla la connessione e riprova.', quranTextOfflineUnsupported:'Archiviazione offline non supportata da questo browser.',
       confirmReset:'Azzerare il contatore?', resetDone:'Contatore di questo dhikr azzerato', targetReached:'obiettivo raggiunto', heard:'Riconosciuto', notRecognized:'Non riconosciuto', phraseNotRecognized:'Frase non riconosciuta', sayDhikrMeasure:'Recita il dhikr, misuro il tempo', durationSet:'Durata impostata a ', timerStarted:'Timer avviato', timerStopped:'Timer fermato',
       deleteConfirm:n=>'Eliminare « '+n+' »?', deleted:n=>'« '+n+' » eliminato.', duplicate:'Esiste già un dhikr con questa traslitterazione.', modified:n=>'« '+n+' » modificato.', added:n=>'« '+n+' » aggiunto alla lista dei dhikr.', invalidTranslit:'Inserisci una traslitterazione valida.', switched:(n,c)=>'Dhikr cambiato in '+n+', contatore '+c,
       micDenied:'Accesso al microfono negato dal browser', micDeniedShort:'Accesso al microfono negato', micPermission:'Autorizza il microfono per attivare il riconoscimento vocale', micPermissionError:'Impossibile ottenere il permesso del microfono', noMic:'Nessun microfono rilevato', networkRetry:'Microfono attivo — problema di rete, nuovo tentativo', micStartError:'Impossibile avviare il microfono', unknownError:'errore sconosciuto', safariSpeechUnavailable:'Safari autorizza il microfono, ma il riconoscimento vocale Web non è disponibile in questa modalità. Prova ad aprire Tasbih+ direttamente in Safari.', speechUnsupported:'Il riconoscimento vocale non è supportato da questo browser. Il contatore e i pulsanti restano utilizzabili al tocco. Prova Chrome, Edge o una versione recente di Safari.'
     },
     en:{
       brandSubtitle:'Your voice dhikr counter.', counterAria:'Dhikr counter', navAria:'Main navigation',
-      navTasbih:'Tasbih', navDhikrs:'My dhikrs', navAsma:'Asma', navQuran:'Quran', navSettings:'Settings', quranTitle:'Quran', quranSubtitle:'Browse the 114 surahs and 30 juz’.', quranSurahs:'Surahs', quranJuz:'Juz’', quranSearch:'Search a surah…', quranVerses:'verses', quranFrom:'From', quranTo:'to', quranBack:'Surahs', quranLoading:'Loading surah…', quranLoadError:'Unable to load the surah. Check your Internet connection.', quranPhonetic:'Phonetic', quranTranslation:'Translation', quranListen:'Listen', quranStop:'Stop', quranMark:'Bookmark', quranMarked:'Bookmarked', quranResume:'Resume', quranPlaySurah:'Listen to the whole surah', quranStopSurah:'Stop surah', quranAudioReady:'Ready to listen', quranAudioPlaying:'Playing', quranAudioPaused:'Paused', quranReciter:'Reciter', micPaused:'Microphone paused', micOn:'Microphone active — listening', micOff:'Microphone off', micActive:'Microphone active', micEnable:'Enable microphone', micDisable:'Turn off microphone',
+      navTasbih:'Tasbih', navDhikrs:'My dhikrs', navAsma:'Asma', navQuran:'Quran', navSettings:'Settings', quranTitle:'Quran', quranSubtitle:'Browse the 114 surahs and 30 juz’.', quranSurahs:'Surahs', quranJuz:'Juz’', quranSearch:'Search a surah…', quranVerses:'verses', quranFrom:'From', quranTo:'to', quranBack:'Surahs', quranLoading:'Loading surah…', quranLoadError:'Unable to load the surah. Check your Internet connection.', quranLoadErrorOfflineHint:' Tip: open Settings → Data and download the Quran text once while online to read it offline afterwards.', quranPhonetic:'Phonetic', quranTranslation:'Translation', quranListen:'Listen', quranStop:'Stop', quranMark:'Bookmark', quranMarked:'Bookmarked', quranResume:'Resume', quranPlaySurah:'Listen to the whole surah', quranStopSurah:'Stop surah', quranAudioReady:'Ready to listen', quranAudioPlaying:'Playing', quranAudioPaused:'Paused', quranReciter:'Reciter', micPaused:'Microphone paused', micOn:'Microphone active — listening', micOff:'Microphone off', micActive:'Microphone active', micEnable:'Enable microphone', micDisable:'Turn off microphone',
       reset:'Reset', pause:'Pause', resume:'Resume', countingActive:'Counting active', countingPaused:'Counting paused', micPausedCounting:'Microphone active — paused, not counting',
       chooseDhikr:'Choose dhikr', target:'Target', timerTitle:'Dhikr timer', measureOne:'Measure one repetition', stopMeasure:'Stop measurement', durationUnset:'Duration not set', durationLabel:'Duration: ', perRepeat:' / repetition', timerStart:'Start timer', timerStop:'Stop timer', free:'Free',
       myDhikrsTitle:'My dhikrs', myDhikrsSubtitle:'Add, edit or delete your custom dhikrs.', addDhikrTitle:'Add a dhikr', editDhikrTitle:'Edit dhikr', addThisDhikr:'Add this dhikr', saveChanges:'Save changes', cancelEdit:'Cancel edit', availableDhikrs:'Available dhikrs', edit:'Edit', delete:'Delete',
       translitPlaceholder:'Transliteration (e.g. La ilaha illallah)', arabicPlaceholder:'الذكر بالعربية (اختياري)', translationPlaceholder:'Translation (optional)',
-      asmaTitle:'Asma', asmaSubtitle:'The 99 beautiful names of Allah — Al-Asma al-Husna.', asmaGuidanceNote:'The situations and invocations below are suggestions related to the meanings of the Names, not required formulas or guaranteed effects.', asmaSearchPlaceholder:'Search a name…', asmaSearchAria:'Search the 99 names', asmaNoResults:'No name found.', asmaInvokeWhenLabel:'Invoke this name', asmaDuaLabel:'Example invocation', asmaExtraTitle:'Other names attested in the Quran and Sunnah', asmaExtraNote:'A separate section from the traditional list of 99 names.', asmaSourceLabel:'Source', settingsTitle:'Settings', themeTitle:'App theme', themeHint:'Choose the app appearance. Your theme is saved automatically.', themeDark:'Dark', themeBlue:'Blue', themeGreen:'Green', themePurple:'Purple', themePink:'Pink', settingsSubtitle:'Personalize the app to your preferences.', languageTitle:'Interface language', languageIntro:'Choose the language used for buttons, menus and app messages.', languageLabel:'Language', languageHint:'The change is applied immediately.', speechLanguageNote:'Dhikrs are recognized in Arabic. Voice commands also support English, with Arabic fallback commands « توقف », « استمر » and « صفر ».', comfortTitle:'Comfort and display', vibrationLabel:'Vibrate when counting', vibrationHint:'Light haptic feedback on compatible mobile devices.', arabicSizeLabel:'Arabic text size', arabicSizeHint:'Adjusts only the main dhikr text.', confirmResetLabel:'Confirm resets', confirmResetHint:'Prevents accidental resets.', dataTitle:'Data', dataText:'Custom dhikrs, counters and settings are saved locally in your browser.',
+      asmaTitle:'Asma', asmaSubtitle:'The 99 beautiful names of Allah — Al-Asma al-Husna.', asmaGuidanceNote:'The situations and invocations below are suggestions related to the meanings of the Names, not required formulas or guaranteed effects.', asmaSearchPlaceholder:'Search a name…', asmaSearchAria:'Search the 99 names', asmaNoResults:'No name found.', asmaInvokeWhenLabel:'Invoke this name', asmaDuaLabel:'Example invocation', asmaExtraTitle:'Other names attested in the Quran and Sunnah', asmaExtraNote:'A separate section from the traditional list of 99 names.', asmaSourceLabel:'Source', settingsTitle:'Settings', themeTitle:'App theme', themeHint:'Choose the app appearance. Your theme is saved automatically.', themeDark:'Dark', themeBlue:'Blue', themeGreen:'Green', themePurple:'Purple', themePink:'Pink', settingsSubtitle:'Personalize the app to your preferences.', languageTitle:'Interface language', languageIntro:'Choose the language used for buttons, menus and app messages.', languageLabel:'Language', languageHint:'The change is applied immediately.', speechLanguageNote:'Dhikrs are recognized in Arabic. Voice commands also support English, with Arabic fallback commands « توقف », « استمر » and « صفر ».', comfortTitle:'Comfort and display', vibrationLabel:'Vibrate when counting', vibrationHint:'Light haptic feedback on compatible mobile devices.', arabicSizeLabel:'Arabic text size', arabicSizeHint:'Adjusts only the main dhikr text.', confirmResetLabel:'Confirm resets', confirmResetHint:'Prevents accidental resets.', dataTitle:'Data', dataText:'Custom dhikrs, counters and settings are saved locally in your browser.', offlineCapableNote:'Also works offline', offlineDataText:'Once opened at least once, the app (counter, Quran, Asma, meditations) works without an Internet connection. Only online audio streaming and downloading new recitations require a connection.', offlineNowNotice:'You are offline — Tasbih+ keeps working normally.', backOnlineNotice:'Connection restored.', updateAvailable:'New version available', updateReload:'Reload', dataExport:'Export my data', dataImport:'Import data', dataExportedFile:'tasbih-plus-data.json', dataExportSuccess:'Data exported.', dataImportSuccess:'Data imported. Reloading…', dataImportError:'Invalid file, import cancelled.', storageFullWarning:'Local storage is full: some recent data could not be saved.', quranTextOfflineLabel:'Quran text offline', quranTextOfflineReady:'✓ Available offline (3 editions: Arabic, phonetic, translation).', quranTextOfflineMissing:'Not yet downloaded for offline reading.', quranTextOfflineDownload:'⬇ Download', quranTextOfflineRetry:'↻ Re-download', quranTextOfflineDownloading:'Downloading Quran text…', quranTextOfflineDone:'✓ Quran text downloaded for offline reading.', quranTextOfflineError:'Download failed — check your connection and try again.', quranTextOfflineUnsupported:'Offline storage is not supported by this browser.',
       confirmReset:'Reset the counter to zero?', resetDone:'This dhikr counter was reset', targetReached:'target reached', heard:'Heard', notRecognized:'Not recognized', phraseNotRecognized:'Phrase not recognized', sayDhikrMeasure:'Say the dhikr, I am measuring the time', durationSet:'Duration set to ', timerStarted:'Timer started', timerStopped:'Timer stopped',
       deleteConfirm:n=>'Delete “'+n+'”?', deleted:n=>'“'+n+'” deleted.', duplicate:'A dhikr with this transliteration already exists.', modified:n=>'“'+n+'” updated.', added:n=>'“'+n+'” added to the dhikr list.', invalidTranslit:'Please enter a valid transliteration.', switched:(n,c)=>'Dhikr changed to '+n+', counter '+c,
       micDenied:'Microphone access denied by the browser', micDeniedShort:'Microphone access denied', micPermission:'Allow microphone access to enable voice recognition', micPermissionError:'Unable to obtain microphone permission', noMic:'No microphone detected', networkRetry:'Microphone active — network problem, retrying', micStartError:'Unable to start the microphone', unknownError:'unknown error', safariSpeechUnavailable:'Safari allows microphone access, but Web Speech recognition is not available in this mode. Try opening Tasbih+ directly in Safari.', speechUnsupported:'Voice recognition is not supported by this browser. The counter and buttons can still be used by touch. Try Chrome, Edge, or a recent version of Safari.'
@@ -2246,6 +2302,23 @@
     }
   }
 
+
+  // ---- Écriture localStorage tolérante au quota plein ----
+  // localStorage peut se remplir (quota bas sur certains navigateurs mobiles) ;
+  // dans ce cas on prévient une seule fois plutôt que d'échouer en silence.
+  let storageWarningShown = false;
+  function safeSetItem(key, value){
+    try{
+      localStorage.setItem(key, value);
+      return true;
+    }catch(e){
+      if(!storageWarningShown){
+        storageWarningShown = true;
+        try{ showDataStatus(t('storageFullWarning')); }catch(_){}
+      }
+      return false;
+    }
+  }
 
   const SETTINGS_KEY = 'tasbih-plus-settings-v1';
   let appSettings = { vibration:true, arabicSize:40, confirmReset:true, language:'fr', theme:'blue' };
@@ -2489,8 +2562,12 @@
     if(el.quranSurahTab) el.quranSurahTab.closest('.quran-switcher').hidden=show;
   }
 
-  function quranCacheKey(n){ return 'tasbih-plus-quran-surah-v31-'+n; }
-
+  // v63 : le texte complet du Coran (3 éditions) est déjà mis en cache une
+  // seule fois par le Service Worker (Cache Storage) au moment de l'installation.
+  // On ne le duplique plus sourate par sourate dans localStorage : le quota de
+  // localStorage est faible sur mobile et cette double copie pouvait le saturer
+  // silencieusement. `loadQuranOfflineLibrary()` sert de cache mémoire pour la
+  // session en cours, et va chercher les données déjà en cache SW sinon.
 
   const QURAN_BOOKMARK_KEY='tasbih-plus-quran-bookmark';
   let quranAudio=null;
@@ -2573,6 +2650,67 @@
   updateReciterControls();
 
   const QURAN_AUDIO_CACHE='tasbih-plus-quran-audio-v3';
+  // Doit être identique à CACHE_NAME dans service-worker.js : c'est le même
+  // cache que le Service Worker remplit avec le texte complet du Coran.
+  const QURAN_TEXT_CACHE='tasbih-plus-v64-quran-offline';
+
+  async function isQuranTextCachedOffline(){
+    if(!('caches' in window)) return false;
+    try{
+      const cache=await caches.open(QURAN_TEXT_CACHE);
+      const results=await Promise.all(Object.values(QURAN_OFFLINE_EDITIONS).map(edition =>
+        cache.match('https://api.alquran.cloud/v1/quran/'+edition)
+      ));
+      return results.every(Boolean);
+    }catch(_){ return false; }
+  }
+
+  async function refreshQuranTextOfflineState(){
+    if(!el.quranTextOfflineState) return;
+    if(!('caches' in window)){
+      el.quranTextOfflineState.textContent=t('quranTextOfflineUnsupported');
+      if(el.quranTextOfflineBtn) el.quranTextOfflineBtn.hidden=true;
+      return;
+    }
+    const ready=await isQuranTextCachedOffline();
+    el.quranTextOfflineState.textContent = ready ? t('quranTextOfflineReady') : t('quranTextOfflineMissing');
+    if(el.quranTextOfflineBtn){
+      el.quranTextOfflineBtn.hidden=false;
+      el.quranTextOfflineBtn.textContent = ready ? t('quranTextOfflineRetry') : t('quranTextOfflineDownload');
+    }
+  }
+
+  async function downloadQuranTextOffline(){
+    if(!('caches' in window) || !el.quranTextOfflineBtn) return;
+    el.quranTextOfflineBtn.disabled=true;
+    el.quranTextOfflineState.textContent=t('quranTextOfflineDownloading');
+    try{
+      const cache=await caches.open(QURAN_TEXT_CACHE);
+      let failed=0;
+      await Promise.all(Object.values(QURAN_OFFLINE_EDITIONS).map(async edition => {
+        const url='https://api.alquran.cloud/v1/quran/'+edition;
+        try{
+          const res=await fetch(url,{cache:'no-store'});
+          if(!res || !res.ok) throw new Error('download failed');
+          await cache.put(url,res.clone());
+        }catch(_){ failed++; }
+      }));
+      // Invalide le cache mémoire de session pour forcer une relecture depuis
+      // le cache (ou le réseau) fraîchement rempli.
+      quranOfflineLibraryPromise=null;
+      el.quranTextOfflineState.textContent = failed
+        ? t('quranTextOfflineError')
+        : t('quranTextOfflineDone');
+    }catch(_){
+      el.quranTextOfflineState.textContent=t('quranTextOfflineError');
+    }finally{
+      el.quranTextOfflineBtn.disabled=false;
+      refreshQuranTextOfflineState();
+    }
+  }
+
+  if(el.quranTextOfflineBtn) el.quranTextOfflineBtn.addEventListener('click', downloadQuranTextOffline);
+
   function quranWholeSurahUrl(reciterId,surah){
     const r=QURAN_RECITERS[reciterId];
     if(!r?.wholeSurah||!r.base)return null;
@@ -2939,22 +3077,9 @@
 
     let data=null;
     try{
-      const cacheKey=quranCacheKey(number);
-      const cached=localStorage.getItem(cacheKey);
-      if(cached){
-        const parsed=JSON.parse(cached);
-        if(validateQuranSurahData(number,parsed)) data=parsed;
-        else localStorage.removeItem(cacheKey);
-      }
-    }catch(_){}
-
-    try{
-      if(!data){
-        data=await getQuranSurahFromOfflineLibrary(number);
-        if(!validateQuranSurahData(number,data)){
-          throw new Error('Quran edition alignment validation failed');
-        }
-        try{localStorage.setItem(quranCacheKey(number),JSON.stringify(data));}catch(_){}
+      data=await getQuranSurahFromOfflineLibrary(number);
+      if(!validateQuranSurahData(number,data)){
+        throw new Error('Quran edition alignment validation failed');
       }
 
       if(!validateQuranSurahData(number,data)){
@@ -3019,7 +3144,7 @@
     }catch(err){
       if(el.quranReaderState){
         el.quranReaderState.hidden=false;
-        el.quranReaderState.textContent=t('quranLoadError');
+        el.quranReaderState.textContent=quranLoadErrorMessage();
       }
       console.warn('Quran load error',err);
     }
@@ -3054,6 +3179,10 @@
 
 
 
+  function quranLoadErrorMessage(){
+    return t('quranLoadError') + (navigator.onLine ? '' : t('quranLoadErrorOfflineHint'));
+  }
+
   function juzAyahKey(a){
     return Number(a?.surah?.number)+':'+Number(a?.numberInSurah);
   }
@@ -3075,20 +3204,9 @@
   }
 
   async function fetchQuranJuzData(juzNumber){
-    const cacheKey='tasbih-plus-quran-juz-v34-'+juzNumber;
-    try{
-      const cached=localStorage.getItem(cacheKey);
-      if(cached){
-        const parsed=JSON.parse(cached);
-        const ar=parsed?.arabic, tr=parsed?.transliteration, fr=parsed?.french;
-        if(validateJuzEdition(ar,juzNumber)&&validateJuzEdition(tr,juzNumber)&&validateJuzEdition(fr,juzNumber)){
-          const aKeys=ar.map(juzAyahKey), tKeys=tr.map(juzAyahKey), fKeys=fr.map(juzAyahKey);
-          if(aKeys.every((k,i)=>k===tKeys[i]&&k===fKeys[i])) return parsed;
-        }
-        localStorage.removeItem(cacheKey);
-      }
-    }catch(_){}
-
+    // Comme pour les sourates (voir openQuranSurah), on s'appuie uniquement sur
+    // le cache mémoire de la session + le cache du Service Worker : pas de
+    // copie supplémentaire dans localStorage.
     const lib=await loadQuranOfflineLibrary();
     const flattenJuz=(edition)=>edition.surahs.flatMap(s=>(s.ayahs||[]).filter(a=>Number(a.juz)===Number(juzNumber)).map(a=>({...a,surah:{number:s.number,name:s.name,englishName:s.englishName}})));
     const ar=flattenJuz(lib.arabic), tr=flattenJuz(lib.transliteration), fr=flattenJuz(lib.french);
@@ -3099,9 +3217,7 @@
     if(!aKeys.every((k,i)=>k===tKeys[i]&&k===fKeys[i])){
       throw new Error('Juz editions are not aligned');
     }
-    const data={arabic:ar,transliteration:tr,french:fr};
-    try{localStorage.setItem(cacheKey,JSON.stringify(data));}catch(_){}
-    return data;
+    return {arabic:ar,transliteration:tr,french:fr};
   }
 
   async function openQuranJuz(juzNumber){
@@ -3180,7 +3296,7 @@
     }catch(err){
       if(el.quranReaderState){
         el.quranReaderState.hidden=false;
-        el.quranReaderState.textContent=t('quranLoadError');
+        el.quranReaderState.textContent=quranLoadErrorMessage();
       }
       console.warn('Quran Juz load error',err);
     }
@@ -3217,7 +3333,7 @@
   if(el.quranJuzTab) el.quranJuzTab.addEventListener('click',()=>setQuranSection('juz'));
   if(el.quranSearch) el.quranSearch.addEventListener('input',renderQuranSurahs);
 
-  function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }catch(e){} }
+  function saveSettings(){ safeSetItem(SETTINGS_KEY, JSON.stringify(appSettings)); }
   function applySettings(){
     el.vibrationSetting.checked = !!appSettings.vibration;
     el.arabicSizeSetting.value = appSettings.arabicSize;
@@ -3269,7 +3385,7 @@
 
   function saveDhikrDisplayOrder(){
     dhikrDisplayOrder = normalizeDhikrDisplayOrder(dhikrDisplayOrder);
-    try{ localStorage.setItem(DHIKR_ORDER_KEY, JSON.stringify(dhikrDisplayOrder)); }catch(e){}
+    safeSetItem(DHIKR_ORDER_KEY, JSON.stringify(dhikrDisplayOrder));
   }
 
   function getOrderedPhraseEntries(){
@@ -3493,9 +3609,7 @@
   }
 
   function savePhraseCounts(){
-    try{
-      localStorage.setItem(PHRASE_COUNTS_KEY, JSON.stringify(state.phraseCounts));
-    }catch(e){ /* stockage local indisponible */ }
+    safeSetItem(PHRASE_COUNTS_KEY, JSON.stringify(state.phraseCounts));
   }
 
   function getPhraseCount(key){
@@ -3744,9 +3858,7 @@
       }catch(e){ /* fallback localStorage */ }
     }
 
-    try{
-      localStorage.setItem(CUSTOM_DHIKR_KEY, data);
-    }catch(e){ /* stockage local indisponible */ }
+    safeSetItem(CUSTOM_DHIKR_KEY, data);
   }
 
   async function loadCustomPhrases(){
@@ -4307,7 +4419,98 @@
     }
   }
 
+  // ---- Export / import global des données (v63) ----
+  const ALL_DATA_KEYS = [SETTINGS_KEY, CUSTOM_DHIKR_KEY, DHIKR_ORDER_KEY, PHRASE_COUNTS_KEY, QURAN_BOOKMARK_KEY, QURAN_RECITER_KEY, MEDITER_DONE_KEY];
+
+  function showDataStatus(text){
+    if(el.dataStatus) el.dataStatus.textContent = text;
+  }
+
+  function exportAllData(){
+    const payload = { app:'tasbih-plus', exportVersion:1, exportedAt:new Date().toISOString(), data:{} };
+    ALL_DATA_KEYS.forEach(key => {
+      try{
+        const raw = localStorage.getItem(key);
+        if(raw !== null) payload.data[key] = raw;
+      }catch(_){}
+    });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = t('dataExportedFile');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showDataStatus(t('dataExportSuccess'));
+  }
+
+  function importAllDataFromFile(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const payload = JSON.parse(String(reader.result));
+        if(!payload || typeof payload.data !== 'object' || !payload.data) throw new Error('invalid');
+        ALL_DATA_KEYS.forEach(key => {
+          if(Object.prototype.hasOwnProperty.call(payload.data, key)){
+            safeSetItem(key, payload.data[key]);
+          }
+        });
+        showDataStatus(t('dataImportSuccess'));
+        setTimeout(() => window.location.reload(), 700);
+      }catch(e){
+        showDataStatus(t('dataImportError'));
+      }
+    };
+    reader.onerror = () => showDataStatus(t('dataImportError'));
+    reader.readAsText(file);
+  }
+
+  if(el.exportDataBtn) el.exportDataBtn.addEventListener('click', exportAllData);
+  if(el.importDataBtn && el.importDataInput){
+    el.importDataBtn.addEventListener('click', () => el.importDataInput.click());
+    el.importDataInput.addEventListener('change', () => {
+      const file = el.importDataInput.files && el.importDataInput.files[0];
+      if(file) importAllDataFromFile(file);
+      el.importDataInput.value = '';
+    });
+  }
+
+  // ---- Bandeau de statut réseau (rassure : l'app reste utilisable hors connexion) ----
+  function updateConnBanner(){
+    if(!el.connBanner) return;
+    if(navigator.onLine){
+      el.connBanner.hidden = true;
+    }else{
+      el.connBanner.hidden = false;
+      el.connBanner.textContent = t('offlineNowNotice');
+    }
+  }
+  window.addEventListener('online', () => {
+    if(el.connBanner && !el.connBanner.hidden){
+      el.connBanner.textContent = t('backOnlineNotice');
+      setTimeout(updateConnBanner, 2500);
+    }
+  });
+  window.addEventListener('offline', updateConnBanner);
+
+  // ---- Bandeau de mise à jour du Service Worker (déclenché depuis pwa.js) ----
+  let pendingUpdateWorker = null;
+  window.addEventListener('tasbih:update-available', (e) => {
+    pendingUpdateWorker = e.detail && e.detail.worker;
+    if(el.updateBanner) el.updateBanner.hidden = false;
+  });
+  if(el.updateReloadBtn){
+    el.updateReloadBtn.addEventListener('click', () => {
+      if(pendingUpdateWorker) pendingUpdateWorker.postMessage({type:'SKIP_WAITING'});
+      if(el.updateBanner) el.updateBanner.hidden = true;
+    });
+  }
+
   // init
+  updateConnBanner();
+  refreshQuranTextOfflineState();
   loadPhraseCounts();
   loadSettings();
   renderAsma();

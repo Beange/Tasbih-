@@ -1,7 +1,7 @@
 {
   "name": "Tasbih+",
   "short_name": "Tasbih+",
-  "description": "Compteur de dhikr vocal avec objectifs, minuteur, thèmes et interface multilingue.",
+  "description": "Compteur de dhikr vocal avec objectifs, minuteur, thèmes et interface multilingue. Fonctionne aussi hors connexion une fois installée.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
