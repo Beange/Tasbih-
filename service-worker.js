@@ -1,5 +1,5 @@
-const CACHE_NAME = 'tasbih-plus-v66-quran-sync';
-const AUDIO_CACHE_NAME = 'tasbih-plus-quran-audio-v3';
+const CACHE_NAME = 'tasbih-plus-v68-iphone-background';
+const AUDIO_CACHE_NAME = 'tasbih-plus-quran-audio-v4';
 const APP_SHELL = [
   './',
   './index.html',

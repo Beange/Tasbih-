@@ -2599,19 +2599,18 @@
   }
   const QURAN_RECITER_KEY='tasbih-plus-quran-reciter';
   const QURAN_RECITERS={
-    // Tous les récitateurs utilisent désormais un MP3 complet par sourate.
-    // Cela rend le comportement identique sur mobile : lecture continue + sourate suivante automatique.
-    'ar.alafasy':{name:'Mishary Rashid Alafasy',wholeSurah:true,offline:true,base:'https://server8.mp3quran.net/afs/'},
-    'ar.husary':{name:'Mahmoud Khalil Al-Husary',wholeSurah:true,offline:true,base:'https://server13.mp3quran.net/husr/'},
-    'ar.minshawi':{name:'Mohamed Siddiq Al-Minshawi',wholeSurah:true,offline:true,base:'https://server10.mp3quran.net/minsh/'},
-    'ar.sudais':{name:'Abdul Rahman Al-Sudais',wholeSurah:true,offline:true,base:'https://server11.mp3quran.net/sds/'},
-    'ar.shuraim':{name:'Saud Al-Shuraim',wholeSurah:true,offline:true,base:'https://server7.mp3quran.net/shur/'},
-    'ar.abdulbasit':{name:'Abdul Basit Abdul Samad',wholeSurah:true,offline:true,base:'https://server7.mp3quran.net/basit/'},
-    'ar.ajamy':{name:'Ahmed ibn Ali Al-Ajamy',wholeSurah:true,offline:true,base:'https://server10.mp3quran.net/ajm/'},
-    'ar.muhammadayoub':{name:'Muhammad Ayyoub',wholeSurah:true,offline:true,base:'https://server8.mp3quran.net/ayyub/'},
-    'ar.hudhaify':{name:'Ali Al-Hudhaify',wholeSurah:true,offline:true,base:'https://server9.mp3quran.net/hthfi/'},
-    'ar.muhammadjibreel':{name:'Muhammad Jibreel',wholeSurah:true,offline:true,base:'https://server8.mp3quran.net/jbrl/'},
-    'hadi.toure':{name:'Mohamed Hadi Touré',wholeSurah:true,offline:true,base:'https://media.way2quran.com/muhammad-al-hadi-toure/hafs-an-asim/'}
+    // Audio officiel Al Quran Cloud, découpé verset par verset.
+    // Cela permet un suivi exact du texte : le verset surligné est celui réellement lu.
+    'ar.alafasy':{name:'Mishary Rashid Alafasy',bitrate:128,offline:true,wholeBase:'https://server8.mp3quran.net/afs/'},
+    'ar.husary':{name:'Mahmoud Khalil Al-Husary',bitrate:128,offline:true,wholeBase:'https://server13.mp3quran.net/husr/'},
+    'ar.minshawi':{name:'Mohamed Siddiq Al-Minshawi',bitrate:128,offline:true,wholeBase:'https://server10.mp3quran.net/minsh/'},
+    'ar.sudais':{name:'Abdul Rahman Al-Sudais',bitrate:192,offline:true,wholeBase:'https://server11.mp3quran.net/sds/'},
+    'ar.shuraim':{name:'Saud Al-Shuraim',bitrate:128,offline:true,wholeBase:'https://server7.mp3quran.net/shur/'},
+    'ar.abdulbasit':{name:'Abdul Basit Abdul Samad',bitrate:192,offline:true,wholeBase:'https://server7.mp3quran.net/basit/'},
+    'ar.ajamy':{name:'Ahmed ibn Ali Al-Ajamy',bitrate:128,offline:true,wholeBase:'https://server10.mp3quran.net/ajm/'},
+    'ar.muhammadayoub':{name:'Muhammad Ayyoub',bitrate:128,offline:true,wholeBase:'https://server8.mp3quran.net/ayyub/'},
+    'ar.hudhaify':{name:'Ali Al-Hudhaify',bitrate:128,offline:true,wholeBase:'https://server9.mp3quran.net/hthfi/'},
+    'ar.muhammadjibreel':{name:'Muhammad Jibreel',bitrate:128,offline:true,wholeBase:'https://server8.mp3quran.net/jbrl/'}
   };
   function getQuranReciter(){
     const saved=localStorage.getItem(QURAN_RECITER_KEY);
@@ -2631,9 +2630,14 @@
     });
   }
 
-  function isWholeSurahReciter(){
-    return !!QURAN_RECITERS[getQuranReciter()]?.wholeSurah;
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  function quranWholeSurahUrl(reciterId,surah){
+    const r=QURAN_RECITERS[reciterId];
+    return r?.wholeBase ? r.wholeBase+String(surah).padStart(3,'0')+'.mp3' : null;
   }
+  // Sur iPhone, une piste continue est utilisée afin qu'iOS puisse conserver
+  // la récitation lorsque la PWA passe en arrière-plan ou que l'écran est verrouillé.
+  function isWholeSurahReciter(){ return IS_IOS; }
   function updateReciterControls(){
     const whole=isWholeSurahReciter();
     if(el.quranPrevAyahBtn){
@@ -2649,7 +2653,7 @@
   }
   updateReciterControls();
 
-  const QURAN_AUDIO_CACHE='tasbih-plus-quran-audio-v3';
+  const QURAN_AUDIO_CACHE='tasbih-plus-quran-audio-v4';
   // Doit être identique à CACHE_NAME dans service-worker.js : c'est le même
   // cache que le Service Worker remplit avec le texte complet du Coran.
   const QURAN_TEXT_CACHE='tasbih-plus-v64-quran-offline';
@@ -2711,69 +2715,51 @@
 
   if(el.quranTextOfflineBtn) el.quranTextOfflineBtn.addEventListener('click', downloadQuranTextOffline);
 
-  function quranWholeSurahUrl(reciterId,surah){
-    const r=QURAN_RECITERS[reciterId];
-    if(!r?.wholeSurah||!r.base)return null;
-    return r.base+String(surah).padStart(3,'0')+'.mp3';
+  function quranGlobalAyahNumber(surah,ayah){
+    return QURAN_SURAHS.slice(0,surah-1).reduce((sum,x)=>sum+Number(x.verses),0)+Number(ayah);
+  }
+  function quranAyahAudioUrl(reciterId,surah,ayah){
+    const r=QURAN_RECITERS[reciterId]; if(!r)return null;
+    return 'https://cdn.islamic.network/quran/audio/'+r.bitrate+'/'+reciterId+'/'+quranGlobalAyahNumber(surah,ayah)+'.mp3';
   }
   async function isCurrentSurahOffline(reciterId){
     if(!('caches' in window))return false;
-    const surah=Number(el.quranReaderPanel?.dataset.surah||0);
-    if(!surah)return false;
-    const url=quranWholeSurahUrl(reciterId,surah);
-    if(!url)return false;
+    const surah=Number(el.quranReaderPanel?.dataset.surah||0), info=quranSurahInfo(surah);
+    if(!surah||!info)return false;
     const cache=await caches.open(QURAN_AUDIO_CACHE);
-    return !!(await cache.match(url));
+    for(let ayah=1;ayah<=info.verses;ayah++) if(!(await cache.match(quranAyahAudioUrl(reciterId,surah,ayah)))) return false;
+    return true;
   }
   async function refreshOfflineState(){
     if(!el.quranOfflineDownloadBtn||!el.quranOfflineState)return;
-    const id=getQuranReciter(), r=QURAN_RECITERS[id];
-    const surah=Number(el.quranReaderPanel?.dataset.surah||0);
-    if(!r?.offline){
-      el.quranOfflineDownloadBtn.hidden=true;
-      el.quranOfflineState.textContent='Ce récitateur reste en lecture Internet.';
-      return;
-    }
+    const id=getQuranReciter(), surah=Number(el.quranReaderPanel?.dataset.surah||0);
     el.quranOfflineDownloadBtn.hidden=false;
-    if(!surah){
-      el.quranOfflineDownloadBtn.disabled=true;
-      el.quranOfflineDownloadBtn.textContent='⬇ Télécharger cette sourate';
-      el.quranOfflineState.textContent='Ouvrez une sourate pour la télécharger.';
-      return;
-    }
+    if(!surah){el.quranOfflineDownloadBtn.disabled=true;el.quranOfflineDownloadBtn.textContent='⬇ Télécharger cette sourate';el.quranOfflineState.textContent='Ouvrez une sourate pour la télécharger.';return;}
     el.quranOfflineDownloadBtn.disabled=false;
-    const info=quranSurahInfo(surah);
-    try{
-      const ready=await isCurrentSurahOffline(id);
-      el.quranOfflineState.textContent=ready?'✓ '+(info?.name||('Sourate '+surah))+' disponible hors connexion':'Cette sourate n’est pas encore téléchargée.';
-      el.quranOfflineDownloadBtn.textContent=ready?'↻ Retélécharger cette sourate':'⬇ Télécharger cette sourate';
-    }catch(e){
-      el.quranOfflineState.textContent='Stockage hors ligne indisponible.';
-    }
+    const info=quranSurahInfo(surah), ready=await isCurrentSurahOffline(id).catch(()=>false);
+    el.quranOfflineState.textContent=ready?'✓ '+info.name+' disponible hors connexion ('+info.verses+' versets)':'Cette sourate n’est pas encore téléchargée.';
+    el.quranOfflineDownloadBtn.textContent=ready?'↻ Retélécharger cette sourate':'⬇ Télécharger cette sourate';
   }
   async function downloadSelectedReciterOffline(){
-    const id=getQuranReciter(), r=QURAN_RECITERS[id];
-    const surah=Number(el.quranReaderPanel?.dataset.surah||0);
-    if(!r?.offline||!surah||!('caches' in window))return;
-    const btn=el.quranOfflineDownloadBtn, state=el.quranOfflineState;
-    const url=quranWholeSurahUrl(id,surah), info=quranSurahInfo(surah);
-    if(!url)return;
-    btn.disabled=true;
-    state.textContent='Téléchargement de '+(info?.name||('la sourate '+surah))+'…';
+    const id=getQuranReciter(), surah=Number(el.quranReaderPanel?.dataset.surah||0), info=quranSurahInfo(surah);
+    if(!surah||!info||!('caches' in window))return;
+    const btn=el.quranOfflineDownloadBtn,state=el.quranOfflineState,cache=await caches.open(QURAN_AUDIO_CACHE);
+    btn.disabled=true; let done=0;
     try{
-      const cache=await caches.open(QURAN_AUDIO_CACHE);
-      await cache.delete(url);
-      const res=await fetch(url,{mode:'no-cors',cache:'no-store'});
-      if(!res || (res.type!=='opaque' && !res.ok)) throw new Error('Téléchargement audio invalide');
-      await cache.put(url,res.clone());
-      if(!(await cache.match(url))) throw new Error('Échec de mise en cache audio');
-      state.textContent='✓ '+(info?.name||('Sourate '+surah))+' téléchargée pour une écoute hors connexion.';
+      for(let ayah=1;ayah<=info.verses;ayah++){
+        const url=quranAyahAudioUrl(id,surah,ayah);
+        state.textContent='Téléchargement '+done+' / '+info.verses+' versets…';
+        if(!(await cache.match(url))){
+          const res=await fetch(url,{cache:'no-store'});
+          if(!res.ok) throw new Error('HTTP '+res.status);
+          await cache.put(url,res.clone());
+        }
+        done=ayah; state.textContent='Téléchargement '+done+' / '+info.verses+' versets…';
+      }
+      state.textContent='✓ '+info.name+' téléchargée : lecture synchronisée disponible hors connexion.';
     }catch(e){
-      state.textContent='Échec du téléchargement de cette sourate — vérifiez la connexion et réessayez.';
-    }finally{
-      btn.disabled=false;
-      await refreshOfflineState();
-    }
+      state.textContent='Téléchargement interrompu à '+done+' / '+info.verses+'. Réessayez : les versets déjà téléchargés sont conservés.';
+    }finally{btn.disabled=false;await refreshOfflineState();}
   }
   if(el.quranOfflineDownloadBtn)el.quranOfflineDownloadBtn.addEventListener('click',downloadSelectedReciterOffline);
   refreshOfflineState();
@@ -2816,7 +2802,50 @@
     playSurahAyah(next,0);
     openQuranSurah(next,true).catch(()=>{});
   }
+  function setQuranMediaSession(surah){
+    if(!('mediaSession' in navigator)) return;
+    const info=quranSurahInfo(surah), reciter=QURAN_RECITERS[getQuranReciter()];
+    try{
+      navigator.mediaSession.metadata=new MediaMetadata({
+        title: info?.name||('Sourate '+surah),
+        artist: reciter?.name||'Tasbih+',
+        album:'Le Noble Coran'
+      });
+      navigator.mediaSession.setActionHandler('play',()=>{ if(quranAudio){quranAudio.play();quranAudioPaused=false;updateQuranPlayerUI('playing');} });
+      navigator.mediaSession.setActionHandler('pause',()=>{ if(quranAudio){quranAudio.pause();quranAudioPaused=true;updateQuranPlayerUI('paused');} });
+      navigator.mediaSession.setActionHandler('previoustrack',()=>moveQuranSurah(-1,true));
+      navigator.mediaSession.setActionHandler('nexttrack',()=>moveQuranSurah(1,true));
+    }catch(_){ }
+  }
+  function playSurahContinuousIOS(surah,startAyahIndex=0){
+    const info=quranSurahInfo(surah), url=quranWholeSurahUrl(getQuranReciter(),surah);
+    if(!info||!url)return;
+    const audio=getQuranAudio();
+    audio.pause(); audio.onended=null; audio.onerror=null; audio.ontimeupdate=null;
+    quranPlayingSurah=surah; quranPlayingAyahIndex=Math.max(0,startAyahIndex||0); quranAudioPaused=false;
+    clearQuranPlayingRow(); setQuranMediaSession(surah);
+    audio.src=url;
+    audio.ontimeupdate=()=>{
+      if(!Number.isFinite(audio.duration)||audio.duration<=0)return;
+      // La piste continue garantit la lecture iOS en arrière-plan. Sans timestamps
+      // officiels pour cette piste, le verset affiché reste une indication de progression.
+      const idx=Math.min(info.verses-1,Math.floor((audio.currentTime/audio.duration)*info.verses));
+      if(idx!==quranPlayingAyahIndex){
+        quranPlayingAyahIndex=idx; clearQuranPlayingRow();
+        const row=document.getElementById('ayah-'+surah+'-'+(idx+1));
+        if(row){row.classList.add('playing'); if(!document.hidden)row.scrollIntoView({behavior:'smooth',block:'center'});}
+      }
+      if(el.quranAudioTrackFill)el.quranAudioTrackFill.style.width=((audio.currentTime/audio.duration)*100)+'%';
+      if(el.quranAudioProgress)el.quranAudioProgress.textContent='Verset ~'+(quranPlayingAyahIndex+1)+' / '+info.verses;
+      try{ if('mediaSession' in navigator && navigator.mediaSession.setPositionState) navigator.mediaSession.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate||1,position:Math.min(audio.currentTime,audio.duration)}); }catch(_){ }
+    };
+    audio.onended=()=>playNextQuranSurah(surah);
+    audio.onerror=()=>{if(el.quranAudioStatus)el.quranAudioStatus.textContent='Audio continu indisponible — vérifiez la connexion.';updateQuranPlayerUI('ready');};
+    if(el.quranAudioStatus)el.quranAudioStatus.textContent='Mode iPhone : récitation continue en arrière-plan…';
+    audio.play().then(()=>{quranAudioPaused=false;updateQuranPlayerUI('playing');}).catch(err=>{quranAudioPaused=true;updateQuranPlayerUI('paused');if(el.quranAudioStatus)el.quranAudioStatus.textContent=err?.name==='NotAllowedError'?'Touchez de nouveau ▶ pour autoriser le son.':'Impossible de lancer la récitation continue.';});
+  }
   function playSurahAyah(surah,index){
+    if(IS_IOS){ playSurahContinuousIOS(surah,index); return; }
     const info=quranSurahInfo(surah);
     if(!info)return;
     if(index<0)index=0;
@@ -2830,67 +2859,30 @@
     if(row){row.classList.add('playing');row.scrollIntoView({behavior:'smooth',block:'center'});}
     const globalAyah=QURAN_SURAHS.slice(0,surah-1).reduce((sum,s)=>sum+s.verses,0)+ayah;
     const reciterId=getQuranReciter(), reciter=QURAN_RECITERS[reciterId]||QURAN_RECITERS['ar.alafasy'];
-    if(reciter.wholeSurah){
-      clearQuranPlayingRow();
-      quranPlayingSurah=surah; quranPlayingAyahIndex=0; quranAudioPaused=false;
-      const audioUrl=quranWholeSurahUrl(reciterId,surah);
-      const audio=getQuranAudio();
-      audio.src=audioUrl;
-      audio.onplaying=()=>{
-        quranAudioPaused=false;
-        updateQuranPlayerUI('playing');
-      };
-      audio.onwaiting=()=>{
-        if(el.quranAudioStatus) el.quranAudioStatus.textContent='Chargement de l’audio…';
-      };
-      audio.oncanplay=()=>{
-        if(!audio.paused && el.quranAudioStatus) el.quranAudioStatus.textContent='Lecture';
-      };
+    const audioUrl=quranAyahAudioUrl(reciterId,surah,ayah);
+    // Si le verset a été téléchargé, lire directement le Blob local. Cela évite
+    // les requêtes HTTP Range qui peuvent échouer en mode avion sur mobile.
+    (async()=>{
+      let source=audioUrl;
+      try{
+        if('caches' in window){
+          const cache=await caches.open(QURAN_AUDIO_CACHE), cached=await cache.match(audioUrl);
+          if(cached){ const blob=await cached.blob(); source=URL.createObjectURL(blob); }
+        }
+      }catch(_){ }
+      audio.src=source;
       audio.ontimeupdate=()=>{
-        if(!Number.isFinite(audio.duration)||audio.duration<=0||!el.quranAudioTrackFill)return;
-        const ratio=Math.max(0,Math.min(1,audio.currentTime/audio.duration));
-        el.quranAudioTrackFill.style.width=(ratio*100)+'%';
-
-        // Les MP3 complets ne fournissent pas de minutage verset-par-verset.
-        // On affiche donc une position de lecture estimée dans le texte, afin
-        // que l'utilisateur voie immédiatement où il se trouve dans la sourate.
-        // (Pour une synchronisation exacte, il faudrait des timestamps officiels
-        // propres à chaque récitateur.)
-        const estimatedIndex=Math.min(info.verses-1,Math.floor(ratio*info.verses));
-        if(estimatedIndex!==quranPlayingAyahIndex){
-          quranPlayingAyahIndex=estimatedIndex;
-          clearQuranPlayingRow();
-          const currentRow=document.getElementById('ayah-'+surah+'-'+(estimatedIndex+1));
-          if(currentRow){
-            currentRow.classList.add('playing');
-            const r=currentRow.getBoundingClientRect();
-            if(r.top<110 || r.bottom>window.innerHeight-110){
-              currentRow.scrollIntoView({behavior:'smooth',block:'center'});
-            }
-          }
-        }
-        if(el.quranAudioProgress){
-          el.quranAudioProgress.textContent='Verset ~'+(estimatedIndex+1)+' / '+info.verses;
-        }
+        if(!Number.isFinite(audio.duration)||!el.quranAudioTrackFill)return;
+        const base=index/info.verses, part=(audio.currentTime/audio.duration)/info.verses;
+        el.quranAudioTrackFill.style.width=((base+part)*100)+'%';
+        if(el.quranAudioProgress) el.quranAudioProgress.textContent=(index+1)+' / '+info.verses;
       };
-      audio.onended=()=>playNextQuranSurah(surah);
-      audio.onerror=()=>{
-        if(el.quranAudioStatus) el.quranAudioStatus.textContent='Audio indisponible — vérifiez le téléchargement ou la connexion.';
-        updateQuranPlayerUI('ready');
-      };
-      if(el.quranAudioStatus) el.quranAudioStatus.textContent='Chargement de l’audio…';
-      audio.play().then(()=>{
-        quranAudioPaused=false;
-        updateQuranPlayerUI('playing');
-      }).catch(err=>{
-        const blocked=err && err.name==='NotAllowedError';
-        if(el.quranAudioStatus) el.quranAudioStatus.textContent=blocked?'Touchez de nouveau ▶ pour autoriser le son.':'Impossible de charger l’audio — vérifiez la connexion.';
-        quranAudioPaused=true;
-        updateQuranPlayerUI('paused');
-      });
-      return;
-    }
-    audio.src='https://cdn.islamic.network/quran/audio/'+reciter.bitrate+'/'+reciterId+'/'+globalAyah+'.mp3';
+      audio.onended=()=>playSurahAyah(surah,index+1);
+      audio.onerror=()=>{if(el.quranAudioStatus)el.quranAudioStatus.textContent='Audio indisponible — téléchargez cette sourate ou vérifiez la connexion.';updateQuranPlayerUI('ready');};
+      if(el.quranAudioStatus)el.quranAudioStatus.textContent='Chargement du verset '+ayah+'…';
+      audio.play().then(()=>{quranAudioPaused=false;updateQuranPlayerUI('playing');}).catch(err=>{if(el.quranAudioStatus)el.quranAudioStatus.textContent=err?.name==='NotAllowedError'?'Touchez de nouveau ▶ pour autoriser le son.':'Impossible de charger ce verset.';quranAudioPaused=true;updateQuranPlayerUI('paused');});
+    })();
+    return;
     audio.ontimeupdate=()=>{
       if(!Number.isFinite(audio.duration)||!el.quranAudioTrackFill)return;
       const base=index/info.verses, part=(audio.currentTime/audio.duration)/info.verses;
