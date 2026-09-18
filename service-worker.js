@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasbih-plus-v64-quran-offline';
+const CACHE_NAME = 'tasbih-plus-v66-quran-sync';
 const AUDIO_CACHE_NAME = 'tasbih-plus-quran-audio-v3';
 const APP_SHELL = [
   './',
